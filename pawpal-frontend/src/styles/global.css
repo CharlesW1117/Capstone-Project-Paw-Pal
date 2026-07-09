@@ -1,0 +1,32 @@
+/* src/styles/global.css */
+
+:root {
+  --color-primary: #00A8A8;
+  --color-secondary: #F5F5F5;
+  --color-accent: #FFB347;
+  --color-text: #333333;
+  --font-family: 'Inter', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
