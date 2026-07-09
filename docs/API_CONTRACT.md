@@ -745,3 +745,52 @@ Backend rules:
 - Each booking can only have one review.
 - Rating must be between 1 and 5.
 
+
+---
+
+# Frontend Integration Notes
+
+Frontend can begin building with mock JSON using the response shapes in this document.
+
+Recommended mock files:
+
+- client/src/mocks/sitters.js
+- client/src/mocks/pets.js
+- client/src/mocks/bookings.js
+- client/src/mocks/reviews.js
+
+When backend endpoints are ready, frontend should replace mock data with fetch calls using the same response shapes.
+
+Frontend should avoid hardcoding field names that are not listed in this contract.
+
+---
+
+# Open Questions
+
+These should be confirmed after the final schema is completed:
+
+1. Will Trust Score be calculated or seeded demo data?
+2. Will background check status be seeded only for MVP?
+3. Will on-time percentage be seeded only for MVP?
+4. Should pending bookings temporarily hold availability, or only accepted bookings?
+5. Will latitude and longitude be included now or saved for stretch map features?
+6. Should deleted pets be hard deleted or soft deleted?
+7. Should sitters be able to edit pricing after bookings already exist?
+8. Should booking totalPrice remain a snapshot even if sitter pricing changes later?
+
+---
+
+# Notes for Backend Team
+
+Important backend implementation rules:
+
+- Bookings should reference sitterServiceId, not just serviceId.
+- Bookings should include separate ownerId and sitterId fields.
+- Bookings should include availabilityId.
+- Declined or cancelled bookings should free the availability slot.
+- Accepted bookings should lock the availability slot.
+- Completed bookings should remain historically booked.
+- Password hashes should never be returned to the frontend.
+- Protected routes should require a valid JWT.
+- Owner-only and sitter-only permissions should be enforced on the backend.
+
