@@ -487,3 +487,261 @@ Response:
   "message": "Pet deleted successfully"
 }
 
+
+---
+
+# Availability Routes
+
+## GET /api/sitters/:id/availability
+
+Returns availability for a specific sitter.
+
+Response:
+
+{
+  "availability": [
+    {
+      "id": 11,
+      "sitterId": 4,
+      "date": "2026-07-15",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "isBooked": false
+    }
+  ]
+}
+
+## POST /api/availability
+
+Creates a sitter availability slot.
+
+Protected route: sitter only.
+
+Request body:
+
+{
+  "date": "2026-07-15",
+  "startTime": "09:00",
+  "endTime": "09:30"
+}
+
+Response:
+
+{
+  "availability": {
+    "id": 11,
+    "sitterId": 4,
+    "date": "2026-07-15",
+    "startTime": "09:00",
+    "endTime": "09:30",
+    "isBooked": false
+  }
+}
+
+## PUT /api/availability/:id
+
+Updates an availability slot.
+
+Protected route: sitter only.
+
+Request body:
+
+{
+  "date": "2026-07-15",
+  "startTime": "10:00",
+  "endTime": "10:30"
+}
+
+Response:
+
+{
+  "availability": {
+    "id": 11,
+    "sitterId": 4,
+    "date": "2026-07-15",
+    "startTime": "10:00",
+    "endTime": "10:30",
+    "isBooked": false
+  }
+}
+
+## DELETE /api/availability/:id
+
+Deletes an availability slot.
+
+Protected route: sitter only.
+
+Response:
+
+{
+  "message": "Availability slot deleted successfully"
+}
+
+---
+
+# Booking Routes
+
+## POST /api/bookings
+
+Creates a new booking request.
+
+Protected route: owner only.
+
+Request body:
+
+{
+  "petId": 3,
+  "sitterId": 4,
+  "sitterServiceId": 9,
+  "availabilityId": 11
+}
+
+Response:
+
+{
+  "booking": {
+    "id": 15,
+    "ownerId": 1,
+    "sitterId": 4,
+    "petId": 3,
+    "sitterServiceId": 9,
+    "availabilityId": 11,
+    "status": "pending",
+    "totalPrice": 22,
+    "date": "2026-07-15",
+    "startTime": "09:00",
+    "endTime": "09:30"
+  }
+}
+
+Backend rules:
+
+- Owner must own the selected pet.
+- sitterServiceId must belong to the selected sitter.
+- availabilityId must belong to the selected sitter.
+- totalPrice should be calculated from the sitter-specific service price.
+- Booking starts as pending.
+
+## GET /api/bookings
+
+Returns bookings for the current user.
+
+Protected route: owner or sitter.
+
+Response:
+
+{
+  "bookings": [
+    {
+      "id": 15,
+      "ownerId": 1,
+      "sitterId": 4,
+      "petId": 3,
+      "sitterServiceId": 9,
+      "availabilityId": 11,
+      "status": "pending",
+      "totalPrice": 22,
+      "date": "2026-07-15",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "pet": {
+        "id": 3,
+        "name": "Rocky"
+      },
+      "sitter": {
+        "id": 4,
+        "name": "Sarah Miller"
+      },
+      "service": {
+        "id": 1,
+        "name": "Dog Walking"
+      }
+    }
+  ]
+}
+
+## PATCH /api/bookings/:id/status
+
+Updates booking status.
+
+Protected route: owner or sitter depending on status change.
+
+Request body:
+
+{
+  "status": "accepted"
+}
+
+Response:
+
+{
+  "booking": {
+    "id": 15,
+    "status": "accepted",
+    "availabilityId": 11,
+    "isAvailabilityBooked": true
+  }
+}
+
+Allowed statuses:
+
+- pending
+- accepted
+- declined
+- cancelled
+- completed
+
+Status rules:
+
+- pending -> accepted
+- pending -> declined
+- pending -> cancelled
+- accepted -> cancelled
+- accepted -> completed
+
+Availability rules:
+
+- accepted = availability slot becomes booked
+- declined = availability slot becomes open
+- cancelled = availability slot becomes open
+- completed = availability slot stays historically booked
+
+---
+
+# Review Routes
+
+## POST /api/reviews
+
+Creates a review for a completed booking.
+
+Protected route: owner only.
+
+Request body:
+
+{
+  "bookingId": 15,
+  "rating": 5,
+  "comment": "Great communication and very reliable."
+}
+
+Response:
+
+{
+  "review": {
+    "id": 7,
+    "bookingId": 15,
+    "reviewerId": 1,
+    "sitterId": 4,
+    "rating": 5,
+    "comment": "Great communication and very reliable.",
+    "createdAt": "2026-07-16T15:30:00.000Z"
+  }
+}
+
+Backend rules:
+
+- Booking must be completed.
+- Only the owner from the booking can leave the review.
+- Each booking can only have one review.
+- Rating must be between 1 and 5.
+
