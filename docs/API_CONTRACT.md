@@ -159,3 +159,331 @@ Used for sitter search and discovery pages.
   "createdAt": "2026-07-16T15:30:00.000Z"
 }
 
+
+---
+
+# API Routes
+
+## Health
+
+### GET /api/health
+
+Checks whether the backend server is running.
+
+Response:
+
+{
+  "status": "ok",
+  "message": "PawPal backend is running",
+  "environment": "development"
+}
+
+---
+
+# Auth Routes
+
+## POST /api/auth/register
+
+Creates a new user account.
+
+Request body:
+
+{
+  "name": "Antoni Roman",
+  "email": "toni@example.com",
+  "password": "password123",
+  "role": "owner",
+  "city": "Chicago",
+  "state": "IL",
+  "zipCode": "60601"
+}
+
+Response:
+
+{
+  "token": "jwt_token_here",
+  "user": {
+    "id": 1,
+    "name": "Antoni Roman",
+    "email": "toni@example.com",
+    "role": "owner",
+    "city": "Chicago",
+    "state": "IL",
+    "zipCode": "60601"
+  }
+}
+
+Notes:
+
+- Password should be hashed with bcrypt.
+- Password hash should never be returned to the frontend.
+- Role must be either owner or sitter.
+
+## POST /api/auth/login
+
+Logs in an existing user.
+
+Request body:
+
+{
+  "email": "toni@example.com",
+  "password": "password123"
+}
+
+Response:
+
+{
+  "token": "jwt_token_here",
+  "user": {
+    "id": 1,
+    "name": "Antoni Roman",
+    "email": "toni@example.com",
+    "role": "owner",
+    "city": "Chicago",
+    "state": "IL",
+    "zipCode": "60601"
+  }
+}
+
+---
+
+# Service Routes
+
+## GET /api/services
+
+Returns all available service categories.
+
+Response:
+
+{
+  "services": [
+    {
+      "id": 1,
+      "name": "Dog Walking",
+      "description": "30-minute neighborhood dog walk.",
+      "basePrice": 20
+    },
+    {
+      "id": 2,
+      "name": "Pet Sitting",
+      "description": "In-home pet sitting.",
+      "basePrice": 40
+    }
+  ]
+}
+
+---
+
+# Sitter Routes
+
+## GET /api/sitters
+
+Searches and filters sitters.
+
+Example query:
+
+GET /api/sitters?service=Dog Walking&city=Chicago&state=IL&zipCode=60601&maxPrice=30&minRating=4
+
+Supported query parameters:
+
+- service
+- city
+- state
+- zipCode
+- maxPrice
+- minRating
+
+Response:
+
+{
+  "sitters": [
+    {
+      "id": 4,
+      "name": "Sarah Miller",
+      "bio": "Experienced dog walker and pet sitter.",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "trustScore": 94,
+      "backgroundCheckStatus": "verified",
+      "onTimePercentage": 98,
+      "averageRating": 4.8,
+      "reviewCount": 12,
+      "services": [
+        {
+          "sitterServiceId": 9,
+          "serviceId": 1,
+          "name": "Dog Walking",
+          "description": "30-minute neighborhood dog walk.",
+          "price": 22
+        }
+      ]
+    }
+  ]
+}
+
+Notes:
+
+- Location search depends on city, state, and zipCode fields.
+- Pricing should come from sitter_services.price_override when available.
+- Rating should come from reviews.
+- Trust Score, background check, and on-time percentage may be seeded demo values for MVP.
+
+## GET /api/sitters/:id
+
+Returns a detailed sitter profile.
+
+Response:
+
+{
+  "sitter": {
+    "id": 4,
+    "name": "Sarah Miller",
+    "bio": "Experienced dog walker and pet sitter.",
+    "phone": "555-555-5555",
+    "city": "Chicago",
+    "state": "IL",
+    "zipCode": "60601",
+    "trustScore": 94,
+    "backgroundCheckStatus": "verified",
+    "onTimePercentage": 98,
+    "averageRating": 4.8,
+    "reviewCount": 12,
+    "services": [
+      {
+        "sitterServiceId": 9,
+        "serviceId": 1,
+        "name": "Dog Walking",
+        "description": "30-minute neighborhood dog walk.",
+        "price": 22
+      }
+    ],
+    "availability": [
+      {
+        "id": 11,
+        "date": "2026-07-15",
+        "startTime": "09:00",
+        "endTime": "09:30",
+        "isBooked": false
+      }
+    ],
+    "reviews": [
+      {
+        "id": 7,
+        "rating": 5,
+        "comment": "Great communication and very reliable.",
+        "reviewerName": "Antoni Roman",
+        "createdAt": "2026-07-16T15:30:00.000Z"
+      }
+    ]
+  }
+}
+
+## POST /api/sitters/me/services
+
+Allows a sitter to add a service they offer.
+
+Protected route: sitter only.
+
+Request body:
+
+{
+  "serviceId": 1,
+  "priceOverride": 22
+}
+
+Response:
+
+{
+  "sitterService": {
+    "sitterServiceId": 9,
+    "sitterId": 4,
+    "serviceId": 1,
+    "name": "Dog Walking",
+    "price": 22
+  }
+}
+
+---
+
+# Pet Routes
+
+## GET /api/pets
+
+Returns the current owner's pets.
+
+Protected route: owner only.
+
+Response:
+
+{
+  "pets": [
+    {
+      "id": 3,
+      "ownerId": 1,
+      "name": "Rocky",
+      "species": "Dog",
+      "breed": "Golden Retriever",
+      "age": 4,
+      "careNotes": "Loves long walks. Allergic to chicken.",
+      "photoUrl": "https://example.com/rocky.jpg"
+    }
+  ]
+}
+
+## POST /api/pets
+
+Creates a pet profile.
+
+Protected route: owner only.
+
+Request body:
+
+{
+  "name": "Rocky",
+  "species": "Dog",
+  "breed": "Golden Retriever",
+  "age": 4,
+  "careNotes": "Loves long walks. Allergic to chicken.",
+  "photoUrl": "https://example.com/rocky.jpg"
+}
+
+Response:
+
+{
+  "pet": {
+    "id": 3,
+    "ownerId": 1,
+    "name": "Rocky",
+    "species": "Dog",
+    "breed": "Golden Retriever",
+    "age": 4,
+    "careNotes": "Loves long walks. Allergic to chicken.",
+    "photoUrl": "https://example.com/rocky.jpg"
+  }
+}
+
+## GET /api/pets/:id
+
+Returns one pet owned by the current user.
+
+Protected route: owner only.
+
+## PUT /api/pets/:id
+
+Updates a pet owned by the current user.
+
+Protected route: owner only.
+
+## DELETE /api/pets/:id
+
+Deletes a pet owned by the current user.
+
+Protected route: owner only.
+
+Response:
+
+{
+  "message": "Pet deleted successfully"
+}
+
