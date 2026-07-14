@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import SitterCard from "../components/SitterCard";
 import SitterFilters from "../components/SitterFilters";
+import { getSitterAvailability } from "../services/availabilityService";
 import { getServices } from "../services/serviceService";
 import { getSitters } from "../services/sitterService";
 import "./Book.css";
@@ -20,6 +21,12 @@ function Book() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  const [openSitterId, setOpenSitterId] = useState(null);
+  const [availabilityBySitter, setAvailabilityBySitter] = useState({});
+  const [selectedSitter, setSelectedSitter] = useState(null);
+  const [selectedAvailability, setSelectedAvailability] =
+    useState(null);
 
   useEffect(() => {
     let shouldIgnore = false;
@@ -67,8 +74,67 @@ function Book() {
     loadSitters();
   }, [loadSitters]);
 
+  async function loadAvailability(sitterId) {
+    setAvailabilityBySitter((currentState) => ({
+      ...currentState,
+      [sitterId]: {
+        items: currentState[sitterId]?.items || [],
+        isLoading: true,
+        error: "",
+      },
+    }));
+
+    try {
+      const availabilityResults =
+        await getSitterAvailability(sitterId);
+
+      setAvailabilityBySitter((currentState) => ({
+        ...currentState,
+        [sitterId]: {
+          items: availabilityResults,
+          isLoading: false,
+          error: "",
+        },
+      }));
+    } catch (requestError) {
+      setAvailabilityBySitter((currentState) => ({
+        ...currentState,
+        [sitterId]: {
+          items: currentState[sitterId]?.items || [],
+          isLoading: false,
+          error:
+            requestError.message ||
+            "Unable to load this sitter's availability.",
+        },
+      }));
+    }
+  }
+
   function applyFilters(nextFilters) {
     setFilters(nextFilters);
+    setOpenSitterId(null);
+    setSelectedSitter(null);
+    setSelectedAvailability(null);
+  }
+
+  function toggleAvailability(sitter) {
+    const isCurrentlyOpen = openSitterId === sitter.id;
+
+    if (isCurrentlyOpen) {
+      setOpenSitterId(null);
+      return;
+    }
+
+    setOpenSitterId(sitter.id);
+
+    if (!availabilityBySitter[sitter.id]) {
+      loadAvailability(sitter.id);
+    }
+  }
+
+  function selectAvailability(sitter, slot) {
+    setSelectedSitter(sitter);
+    setSelectedAvailability(slot);
   }
 
   return (
@@ -140,9 +206,35 @@ function Book() {
 
         {!isLoading && !loadError && sitters.length > 0 && (
           <div className="book-page__grid">
-            {sitters.map((sitter) => (
-              <SitterCard key={sitter.id} sitter={sitter} />
-            ))}
+            {sitters.map((sitter) => {
+              const availabilityState =
+                availabilityBySitter[sitter.id] || {
+                  items: [],
+                  isLoading: false,
+                  error: "",
+                };
+
+              return (
+                <SitterCard
+                  key={sitter.id}
+                  sitter={sitter}
+                  isAvailabilityOpen={openSitterId === sitter.id}
+                  availability={availabilityState.items}
+                  isAvailabilityLoading={
+                    availabilityState.isLoading
+                  }
+                  availabilityError={availabilityState.error}
+                  selectedAvailabilityId={
+                    selectedSitter?.id === sitter.id
+                      ? selectedAvailability?.id
+                      : null
+                  }
+                  onToggleAvailability={toggleAvailability}
+                  onSelectAvailability={selectAvailability}
+                  onRetryAvailability={loadAvailability}
+                />
+              );
+            })}
           </div>
         )}
       </section>

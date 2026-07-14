@@ -1,3 +1,4 @@
+import AvailabilityPicker from "./AvailabilityPicker";
 import "./SitterCard.css";
 
 function getInitials(name) {
@@ -26,11 +27,23 @@ function formatPrice(price) {
   }).format(numericPrice);
 }
 
-function SitterCard({ sitter }) {
+function SitterCard({
+  sitter,
+  isAvailabilityOpen,
+  availability,
+  isAvailabilityLoading,
+  availabilityError,
+  selectedAvailabilityId,
+  onToggleAvailability,
+  onSelectAvailability,
+  onRetryAvailability,
+}) {
   const averageRating = Number(sitter.averageRating || 0).toFixed(1);
   const services = Array.isArray(sitter.services)
     ? sitter.services
     : [];
+
+  const availabilitySectionId = `sitter-${sitter.id}-availability`;
 
   return (
     <article className="sitter-card">
@@ -81,6 +94,7 @@ function SitterCard({ sitter }) {
               <li key={service.sitterServiceId}>
                 <div>
                   <strong>{service.name}</strong>
+
                   {service.description && (
                     <span>{service.description}</span>
                   )}
@@ -94,6 +108,39 @@ function SitterCard({ sitter }) {
           <p>No services are currently listed.</p>
         )}
       </div>
+
+      <button
+        className="sitter-card__availability-toggle"
+        type="button"
+        onClick={() => onToggleAvailability(sitter)}
+        aria-expanded={isAvailabilityOpen}
+        aria-controls={availabilitySectionId}
+      >
+        <i className="fi fi-rr-calendar-clock" aria-hidden="true" />
+        {isAvailabilityOpen ? "Hide availability" : "View availability"}
+        <i
+          className={`fi ${
+            isAvailabilityOpen
+              ? "fi-rr-angle-small-up"
+              : "fi-rr-angle-small-down"
+          }`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {isAvailabilityOpen && (
+        <div id={availabilitySectionId}>
+          <AvailabilityPicker
+            sitterName={sitter.name}
+            availability={availability}
+            isLoading={isAvailabilityLoading}
+            error={availabilityError}
+            selectedAvailabilityId={selectedAvailabilityId}
+            onSelect={(slot) => onSelectAvailability(sitter, slot)}
+            onRetry={() => onRetryAvailability(sitter.id)}
+          />
+        </div>
+      )}
     </article>
   );
 }
