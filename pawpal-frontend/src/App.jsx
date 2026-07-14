@@ -21,6 +21,9 @@ function App() {
       <Navbar onToggleSidebar={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} />
       <Routes>
+        {/* 👇 This route fixes the blank page */}
+        <Route path="/" element={<Dashboard />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
