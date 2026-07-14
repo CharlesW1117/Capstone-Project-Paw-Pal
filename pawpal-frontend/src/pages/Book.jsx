@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import BookingConfirmation from "../components/BookingConfirmation";
 import BookingSummary from "../components/BookingSummary";
+import Modal from "../components/Modal";
 import SitterCard from "../components/SitterCard";
 import SitterFilters from "../components/SitterFilters";
 import { getSitterAvailability } from "../services/availabilityService";
@@ -280,29 +282,6 @@ function Book() {
         />
       </section>
 
-      {bookingSuccess && (
-        <div className="book-page__success" role="status">
-          <i className="fi fi-rr-check-circle" aria-hidden="true" />
-
-          <div>
-            <h2>Booking request submitted</h2>
-            <p>
-              Your request for {bookingSuccess.pet?.name || "your pet"}{" "}
-              with {bookingSuccess.sitter.name} is pending.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setBookingSuccess(null)}
-            aria-label="Dismiss confirmation"
-            title="Dismiss"
-          >
-            <i className="fi fi-rr-cross-small" aria-hidden="true" />
-          </button>
-        </div>
-      )}
-
       <section
         className="book-page__results"
         aria-labelledby="sitter-results-heading"
@@ -413,6 +392,22 @@ function Book() {
             bookingError={bookingError}
           />
         </section>
+      )}
+
+      {bookingSuccess && (
+        <Modal
+          title="Booking request submitted"
+          onClose={() => setBookingSuccess(null)}
+        >
+          <BookingConfirmation
+            booking={bookingSuccess.booking}
+            pet={bookingSuccess.pet}
+            sitter={bookingSuccess.sitter}
+            service={bookingSuccess.service}
+            availability={bookingSuccess.availability}
+            onClose={() => setBookingSuccess(null)}
+          />
+        </Modal>
       )}
     </main>
   );
