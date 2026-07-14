@@ -26,16 +26,14 @@ function App() {
     <Router>
       <Navbar onToggleSidebar={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} />
+
       <Routes>
-        {/* Default route */}
         <Route path="/" element={<Navigate to="/homepage" />} />
         <Route path="/homepage" element={<HomePage />} />
 
-        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected routes */}
         <Route
           path="/dashboard"
           element={
@@ -44,6 +42,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/pets"
+          element={
+            <ProtectedRoute>
+              <Pets />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/book"
           element={
@@ -52,6 +60,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/calendar"
           element={
@@ -60,6 +69,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/messages"
           element={
@@ -69,8 +79,6 @@ function App() {
           }
         />
 
-        {/* Public routes */}
-        <Route path="/pets" element={<Pets />} />
         <Route path="/reviews" element={<Reviews />} />
       </Routes>
     </Router>
