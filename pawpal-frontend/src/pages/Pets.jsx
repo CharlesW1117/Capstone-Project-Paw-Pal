@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import DeletePetDialog from "../components/DeletePetDialog";
 import Modal from "../components/Modal";
 import PetForm from "../components/PetForm";
 import PetList from "../components/PetList";
 import {
   createPet,
+  deletePet,
   getPets,
   updatePet,
 } from "../services/petservice";
@@ -13,10 +15,15 @@ function Pets() {
   const [pets, setPets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPet, setEditingPet] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState("");
+
+  const [petPendingDelete, setPetPendingDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const loadPets = useCallback(async () => {
     setIsLoading(true);
@@ -90,6 +97,48 @@ function Pets() {
     }
   }
 
+  function openDeleteDialog(pet) {
+    setPetPendingDelete(pet);
+    setDeleteError("");
+  }
+
+  function closeDeleteDialog() {
+    if (isDeleting) {
+      return;
+    }
+
+    setPetPendingDelete(null);
+    setDeleteError("");
+  }
+
+  async function handleDeletePet() {
+    if (!petPendingDelete) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await deletePet(petPendingDelete.id);
+
+      setPets((currentPets) =>
+        currentPets.filter(
+          (pet) => pet.id !== petPendingDelete.id,
+        ),
+      );
+
+      setPetPendingDelete(null);
+    } catch (requestError) {
+      setDeleteError(
+        requestError.message ||
+          "Unable to delete this pet profile.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <main className="pets-page main-content">
       <header className="pets-page__header">
@@ -133,7 +182,11 @@ function Pets() {
       )}
 
       {!isLoading && !loadError && (
-        <PetList pets={pets} onEdit={openEditForm} />
+        <PetList
+          pets={pets}
+          onEdit={openEditForm}
+          onDelete={openDeleteDialog}
+        />
       )}
 
       {isFormOpen && (
@@ -149,6 +202,22 @@ function Pets() {
             onCancel={closeForm}
             isSubmitting={isSaving}
             serverError={formError}
+          />
+        </Modal>
+      )}
+
+      {petPendingDelete && (
+        <Modal
+          title="Delete pet profile"
+          onClose={closeDeleteDialog}
+          isCloseDisabled={isDeleting}
+        >
+          <DeletePetDialog
+            pet={petPendingDelete}
+            onConfirm={handleDeletePet}
+            onCancel={closeDeleteDialog}
+            isDeleting={isDeleting}
+            error={deleteError}
           />
         </Modal>
       )}
