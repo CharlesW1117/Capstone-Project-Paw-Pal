@@ -1,22 +1,34 @@
 import { useCallback, useEffect, useState } from "react";
+import Modal from "../components/Modal";
+import PetForm from "../components/PetForm";
 import PetList from "../components/PetList";
-import { getPets } from "../services/petservice";
+import {
+  createPet,
+  getPets,
+  updatePet,
+} from "../services/petservice";
 import "./Pets.css";
 
 function Pets() {
   const [pets, setPets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingPet, setEditingPet] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const loadPets = useCallback(async () => {
     setIsLoading(true);
-    setError("");
+    setLoadError("");
 
     try {
       const petResults = await getPets();
       setPets(petResults);
     } catch (requestError) {
-      setError(requestError.message || "Unable to load your pets.");
+      setLoadError(
+        requestError.message || "Unable to load your pets.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -25,6 +37,58 @@ function Pets() {
   useEffect(() => {
     loadPets();
   }, [loadPets]);
+
+  function openCreateForm() {
+    setEditingPet(null);
+    setFormError("");
+    setIsFormOpen(true);
+  }
+
+  function openEditForm(pet) {
+    setEditingPet(pet);
+    setFormError("");
+    setIsFormOpen(true);
+  }
+
+  function closeForm() {
+    if (isSaving) {
+      return;
+    }
+
+    setIsFormOpen(false);
+    setEditingPet(null);
+    setFormError("");
+  }
+
+  async function handleSavePet(petDetails) {
+    setIsSaving(true);
+    setFormError("");
+
+    try {
+      if (editingPet) {
+        const savedPet = await updatePet(editingPet.id, petDetails);
+
+        setPets((currentPets) =>
+          currentPets.map((pet) =>
+            pet.id === savedPet.id ? savedPet : pet,
+          ),
+        );
+      } else {
+        const savedPet = await createPet(petDetails);
+
+        setPets((currentPets) => [savedPet, ...currentPets]);
+      }
+
+      setIsFormOpen(false);
+      setEditingPet(null);
+    } catch (requestError) {
+      setFormError(
+        requestError.message || "Unable to save this pet.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <main className="pets-page main-content">
@@ -36,6 +100,15 @@ function Pets() {
             Keep care details ready for every booking.
           </p>
         </div>
+
+        <button
+          className="pets-page__add-button"
+          type="button"
+          onClick={openCreateForm}
+        >
+          <i className="fi fi-rr-plus" aria-hidden="true" />
+          Add pet
+        </button>
       </header>
 
       {isLoading && (
@@ -45,11 +118,11 @@ function Pets() {
         </div>
       )}
 
-      {!isLoading && error && (
+      {!isLoading && loadError && (
         <div className="pets-page__error" role="alert">
           <div>
             <h2>Pet profiles could not be loaded</h2>
-            <p>{error}</p>
+            <p>{loadError}</p>
           </div>
 
           <button type="button" onClick={loadPets}>
@@ -59,7 +132,26 @@ function Pets() {
         </div>
       )}
 
-      {!isLoading && !error && <PetList pets={pets} />}
+      {!isLoading && !loadError && (
+        <PetList pets={pets} onEdit={openEditForm} />
+      )}
+
+      {isFormOpen && (
+        <Modal
+          title={editingPet ? `Edit ${editingPet.name}` : "Add a pet"}
+          onClose={closeForm}
+          isCloseDisabled={isSaving}
+        >
+          <PetForm
+            key={editingPet?.id || "new-pet"}
+            pet={editingPet}
+            onSubmit={handleSavePet}
+            onCancel={closeForm}
+            isSubmitting={isSaving}
+            serverError={formError}
+          />
+        </Modal>
+      )}
     </main>
   );
 }
