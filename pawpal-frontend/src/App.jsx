@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Login from "./pages/Login";
@@ -10,10 +15,10 @@ import Book from "./pages/Book";
 import Calendar from "./pages/Calendar";
 import Messages from "./pages/Messages";
 import Reviews from "./pages/Reviews";
+import HomePage from "./pages/HomePage";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
@@ -21,8 +26,9 @@ function App() {
       <Navbar onToggleSidebar={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} />
       <Routes>
-        {/* 👇 This route fixes the blank page */}
-        <Route path="/" element={<Dashboard />} />
+        {/* 👇 Default route opens homepage */}
+        <Route path="/" element={<Navigate to="/homepage" />} />
+        <Route path="/homepage" element={<HomePage />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
