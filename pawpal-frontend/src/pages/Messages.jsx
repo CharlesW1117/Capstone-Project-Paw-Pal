@@ -5,8 +5,8 @@ import {
   useRef,
   useState,
 } from "react";
-import ChatWindow from "../components/ChatWindow";
-import MessageList from "../components/MessageList";
+import ChatWindow from "../components/messaging/ChatWindow";
+import MessageList from "../components/messaging/MessageList";
 import { getCurrentSession } from "../services/authServices";
 import {
   getBookingMessages,

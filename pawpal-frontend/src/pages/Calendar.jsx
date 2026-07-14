@@ -12,8 +12,8 @@ import {
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
-import CalendarEventDetails from "../components/CalendarEventDetails";
-import CalendarLegend from "../components/CalendarLegend";
+import CalendarEventDetails from "../components/calendar/CalendarEventDetails";
+import CalendarLegend from "../components/calendar/CalendarLegend";
 import Modal from "../components/Modal";
 import { getSitterAvailability } from "../services/availabilityService";
 import { getCurrentSession } from "../services/authServices";

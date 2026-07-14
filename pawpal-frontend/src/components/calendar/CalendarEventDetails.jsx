@@ -1,4 +1,4 @@
-import { getBookingStatusLabel } from "../utils/calendarEvents";
+import { getBookingStatusLabel } from "../../utils/calendarEvents";
 import "./CalendarEventDetails.css";
 
 function formatDate(value) {
