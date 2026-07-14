@@ -7,7 +7,12 @@ function Navbar({ onToggleSidebar }) {
       <button className="menu-toggle" onClick={onToggleSidebar}>
         ☰
       </button>
-      <div className="navbar-logo">🐾 PawPal</div>
+
+      {/* 👇 Make PawPal clickable */}
+      <NavLink to="/homepage" className="navbar-logo">
+        🐾 PawPal
+      </NavLink>
+
       <ul className="navbar-links">
         <li>
           <NavLink to="/dashboard">Dashboard</NavLink>
@@ -28,6 +33,7 @@ function Navbar({ onToggleSidebar }) {
           <NavLink to="/reviews">Reviews</NavLink>
         </li>
       </ul>
+
       <button className="logout-btn">Logout</button>
     </nav>
   );

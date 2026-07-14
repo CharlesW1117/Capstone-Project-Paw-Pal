@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -26,17 +27,50 @@ function App() {
       <Navbar onToggleSidebar={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} />
       <Routes>
-        {/* 👇 Default route opens homepage */}
+        {/* Default route */}
         <Route path="/" element={<Navigate to="/homepage" />} />
         <Route path="/homepage" element={<HomePage />} />
 
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/book"
+          element={
+            <ProtectedRoute>
+              <Book />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <Calendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Public routes */}
         <Route path="/pets" element={<Pets />} />
-        <Route path="/book" element={<Book />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/messages" element={<Messages />} />
         <Route path="/reviews" element={<Reviews />} />
       </Routes>
     </Router>
