@@ -33,7 +33,9 @@ function SitterCard({
   availability,
   isAvailabilityLoading,
   availabilityError,
+  selectedSitterServiceId,
   selectedAvailabilityId,
+  onSelectService,
   onToggleAvailability,
   onSelectAvailability,
   onRetryAvailability,
@@ -70,7 +72,9 @@ function SitterCard({
           </strong>
           <small>
             {sitter.reviewCount || 0}{" "}
-            {Number(sitter.reviewCount) === 1 ? "review" : "reviews"}
+            {Number(sitter.reviewCount) === 1
+              ? "review"
+              : "reviews"}
           </small>
         </div>
 
@@ -86,23 +90,46 @@ function SitterCard({
       </p>
 
       <div className="sitter-card__services">
-        <h3>Services</h3>
+        <h3>Choose a service</h3>
 
         {services.length > 0 ? (
           <ul>
-            {services.map((service) => (
-              <li key={service.sitterServiceId}>
-                <div>
-                  <strong>{service.name}</strong>
+            {services.map((service) => {
+              const isSelected =
+                selectedSitterServiceId === service.sitterServiceId;
 
-                  {service.description && (
-                    <span>{service.description}</span>
-                  )}
-                </div>
+              return (
+                <li key={service.sitterServiceId}>
+                  <button
+                    className={`sitter-card__service-option ${
+                      isSelected
+                        ? "sitter-card__service-option--selected"
+                        : ""
+                    }`}
+                    type="button"
+                    onClick={() => onSelectService(sitter, service)}
+                    aria-pressed={isSelected}
+                  >
+                    <span>
+                      <strong>{service.name}</strong>
 
-                <b>{formatPrice(service.price)}</b>
-              </li>
-            ))}
+                      {service.description && (
+                        <small>{service.description}</small>
+                      )}
+                    </span>
+
+                    <b>{formatPrice(service.price)}</b>
+
+                    {isSelected && (
+                      <i
+                        className="fi fi-rr-check-circle"
+                        aria-label="Selected"
+                      />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p>No services are currently listed.</p>
