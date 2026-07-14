@@ -1,11 +1,40 @@
-import { Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage.jsx";
-import "./App.css";
+import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Pets from "./pages/Pets";
+import Book from "./pages/Book";
+import Calendar from "./pages/Calendar";
+import Messages from "./pages/Messages";
+import Reviews from "./pages/Reviews";
 
-export default function App() {
+function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-    </Routes>
+    <Router>
+      <Navbar onToggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} />
+      <Routes>
+        {/* 👇 This route fixes the blank page */}
+        <Route path="/" element={<Dashboard />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/pets" element={<Pets />} />
+        <Route path="/book" element={<Book />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/reviews" element={<Reviews />} />
+      </Routes>
+    </Router>
   );
 }
+
+export default App;
