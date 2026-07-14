@@ -1,6 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import RatingSummary from "../components/RatingSummary";
+import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
+import { getCurrentSession } from "../services/authServices";
+import { getBookings } from "../services/bookingService";
+import { createReview } from "../services/reviewService";
 import {
   getSitterById,
   getSitters,
@@ -8,6 +17,8 @@ import {
 import "./Reviews.css";
 
 function Reviews() {
+  const session = useMemo(() => getCurrentSession(), []);
+
   const [sitters, setSitters] = useState([]);
   const [selectedSitterId, setSelectedSitterId] = useState("");
   const [selectedSitter, setSelectedSitter] = useState(null);
@@ -17,6 +28,16 @@ function Reviews() {
 
   const [sittersError, setSittersError] = useState("");
   const [detailsError, setDetailsError] = useState("");
+
+  const [bookings, setBookings] = useState([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [bookingsError, setBookingsError] = useState("");
+
+  const [isSubmittingReview, setIsSubmittingReview] =
+    useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const [reviewSuccess, setReviewSuccess] = useState("");
+  const [reviewFormKey, setReviewFormKey] = useState(0);
 
   const loadSitters = useCallback(async () => {
     setIsLoadingSitters(true);
@@ -67,6 +88,27 @@ function Reviews() {
     }
   }, [selectedSitterId]);
 
+  const loadBookings = useCallback(async () => {
+    if (session?.role !== "owner") {
+      setBookings([]);
+      return;
+    }
+
+    setIsLoadingBookings(true);
+    setBookingsError("");
+
+    try {
+      const bookingResults = await getBookings();
+      setBookings(bookingResults);
+    } catch (requestError) {
+      setBookingsError(
+        requestError.message || "Unable to load your bookings.",
+      );
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  }, [session?.role]);
+
   useEffect(() => {
     loadSitters();
   }, [loadSitters]);
@@ -75,12 +117,68 @@ function Reviews() {
     loadSitterDetails();
   }, [loadSitterDetails]);
 
+  useEffect(() => {
+    loadBookings();
+  }, [loadBookings]);
+
+  const eligibleBookings = useMemo(() => {
+    if (!selectedSitter) {
+      return [];
+    }
+
+    const reviewedBookingIds = new Set(
+      (selectedSitter.reviews || []).map((review) =>
+        String(review.bookingId),
+      ),
+    );
+
+    return bookings.filter((booking) => {
+      return (
+        booking.status === "completed" &&
+        String(booking.sitterId) === String(selectedSitter.id) &&
+        !reviewedBookingIds.has(String(booking.id))
+      );
+    });
+  }, [bookings, selectedSitter]);
+
+  async function submitReview(reviewDetails) {
+    setIsSubmittingReview(true);
+    setReviewError("");
+    setReviewSuccess("");
+
+    try {
+      await createReview(reviewDetails);
+
+      setReviewSuccess("Your review was submitted successfully.");
+      setReviewFormKey((currentKey) => currentKey + 1);
+
+      await loadSitterDetails();
+    } catch (requestError) {
+      setReviewError(
+        requestError.message || "Unable to submit your review.",
+      );
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  }
+
+  function changeSelectedSitter(event) {
+    setSelectedSitterId(event.target.value);
+    setReviewError("");
+    setReviewSuccess("");
+    setReviewFormKey((currentKey) => currentKey + 1);
+  }
+
   function refreshReviews() {
     loadSitters();
     loadSitterDetails();
+    loadBookings();
   }
 
-  const isLoading = isLoadingSitters || isLoadingDetails;
+  const isLoading =
+    isLoadingSitters ||
+    isLoadingDetails ||
+    isLoadingBookings;
 
   return (
     <main className="reviews-page main-content">
@@ -111,9 +209,7 @@ function Reviews() {
           <select
             id="reviews-sitter"
             value={selectedSitterId}
-            onChange={(event) =>
-              setSelectedSitterId(event.target.value)
-            }
+            onChange={changeSelectedSitter}
             disabled={isLoadingSitters || sitters.length === 0}
           >
             {sitters.length === 0 && (
@@ -166,6 +262,29 @@ function Reviews() {
       {!isLoading && selectedSitter && (
         <div className="reviews-page__content">
           <RatingSummary sitter={selectedSitter} />
+
+          {session?.role === "owner" && (
+            <>
+              {reviewSuccess && (
+                <div className="reviews-page__success" role="status">
+                  <i
+                    className="fi fi-rr-check-circle"
+                    aria-hidden="true"
+                  />
+                  <span>{reviewSuccess}</span>
+                </div>
+              )}
+
+              <ReviewForm
+                key={`${selectedSitter.id}-${reviewFormKey}`}
+                bookings={eligibleBookings}
+                sitterName={selectedSitter.name}
+                onSubmit={submitReview}
+                isSubmitting={isSubmittingReview}
+                error={reviewError || bookingsError}
+              />
+            </>
+          )}
 
           <ReviewList reviews={selectedSitter.reviews || []} />
         </div>
