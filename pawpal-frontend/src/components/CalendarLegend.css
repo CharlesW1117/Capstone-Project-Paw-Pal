@@ -1,0 +1,45 @@
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.calendar-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #625b6c;
+  font-size: 0.75rem;
+}
+
+.calendar-legend__swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: 0 0 auto;
+  border-radius: 0.1875rem;
+}
+
+.calendar-legend__swatch--available {
+  background: #267143;
+}
+
+.calendar-legend__swatch--pending {
+  background: #a87600;
+}
+
+.calendar-legend__swatch--accepted {
+  background: #176b87;
+}
+
+.calendar-legend__swatch--completed {
+  background: #5a438c;
+}
+
+.calendar-legend__swatch--cancelled {
+  background: #746d7d;
+}
+
+.calendar-legend__swatch--declined {
+  background: #a92836;
+}
