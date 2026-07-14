@@ -11,6 +11,10 @@
 }
 
 .messages-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
   margin-bottom: 1.25rem;
 }
 
@@ -28,6 +32,42 @@
   font-size: 2.125rem;
   line-height: 1.2;
   letter-spacing: 0;
+}
+
+.messages-page__refresh {
+  display: inline-flex;
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 0.0625rem solid #007f7f;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #007f7f;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.messages-page__refresh:hover:not(:disabled) {
+  background: #f2fbfa;
+}
+
+.messages-page__refresh:focus-visible {
+  outline: 0.1875rem solid rgba(0, 168, 168, 0.25);
+  outline-offset: 0.125rem;
+}
+
+.messages-page__refresh:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.messages-page__refresh i {
+  display: flex;
 }
 
 .messages-page__workspace {
@@ -82,7 +122,16 @@
 }
 
 @media (max-width: 43.75rem) {
+  .messages-page__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .messages-page__header h1 {
     font-size: 1.8125rem;
+  }
+
+  .messages-page__refresh {
+    width: 100%;
   }
 }

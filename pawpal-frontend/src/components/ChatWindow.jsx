@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./ChatWindow.css";
 
 function getInitials(name) {
@@ -43,6 +43,17 @@ function ChatWindow({
   error,
 }) {
   const [draft, setDraft] = useState("");
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    setDraft("");
+  }, [conversation?.id]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      block: "end",
+    });
+  }, [messages]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -110,30 +121,36 @@ function ChatWindow({
             <p>No messages yet</p>
           </div>
         ) : (
-          <ol>
-            {messages.map((message) => {
-              const isCurrentUser =
-                String(message.senderId) === String(currentUserId);
+          <>
+            <ol>
+              {messages.map((message) => {
+                const isCurrentUser =
+                  String(message.senderId) ===
+                  String(currentUserId);
 
-              return (
-                <li
-                  key={message.id}
-                  className={
-                    isCurrentUser
-                      ? "chat-window__message chat-window__message--sent"
-                      : "chat-window__message chat-window__message--received"
-                  }
-                >
-                  <div>
-                    <p>{message.body}</p>
-                    <time dateTime={message.createdAt}>
-                      {formatMessageTime(message.createdAt)}
-                    </time>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+                return (
+                  <li
+                    key={message.id}
+                    className={
+                      isCurrentUser
+                        ? "chat-window__message chat-window__message--sent"
+                        : "chat-window__message chat-window__message--received"
+                    }
+                  >
+                    <div>
+                      <p>{message.body}</p>
+
+                      <time dateTime={message.createdAt}>
+                        {formatMessageTime(message.createdAt)}
+                      </time>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div ref={messagesEndRef} aria-hidden="true" />
+          </>
         )}
       </div>
 
@@ -148,7 +165,10 @@ function ChatWindow({
       )}
 
       <form className="chat-window__composer" onSubmit={handleSubmit}>
-        <label className="chat-window__visually-hidden" htmlFor="message-draft">
+        <label
+          className="chat-window__visually-hidden"
+          htmlFor="message-draft"
+        >
           Message
         </label>
 
@@ -169,9 +189,15 @@ function ChatWindow({
           title="Send message"
         >
           {isSending ? (
-            <span className="chat-window__spinner" aria-hidden="true" />
+            <span
+              className="chat-window__spinner"
+              aria-hidden="true"
+            />
           ) : (
-            <i className="fi fi-rr-paper-plane" aria-hidden="true" />
+            <i
+              className="fi fi-rr-paper-plane"
+              aria-hidden="true"
+            />
           )}
         </button>
       </form>
