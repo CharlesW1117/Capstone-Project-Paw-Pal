@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import BookingConfirmation from "../components/BookingConfirmation";
-import BookingSummary from "../components/BookingSummary";
+import BookingConfirmation from "../components/booking/BookingConfirmation";
+import BookingSummary from "../components/booking/BookingSummary";
 import Modal from "../components/Modal";
-import SitterCard from "../components/SitterCard";
-import SitterFilters from "../components/SitterFilters";
+import SitterCard from "../components/booking/SitterCard";
+import SitterFilters from "../components/booking/SitterFilters";
 import { getSitterAvailability } from "../services/availabilityService";
 import { createBooking } from "../services/bookingService";
 import { getPets } from "../services/petservice";

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import DeletePetDialog from "../components/DeletePetDialog";
+import DeletePetDialog from "../components/pets/DeletePetDialog";
 import Modal from "../components/Modal";
-import PetForm from "../components/PetForm";
-import PetList from "../components/PetList";
+import PetForm from "../components/pets/PetForm";
+import PetList from "../components/pets/PetList";
 import {
   createPet,
   deletePet,

@@ -4,9 +4,9 @@ import {
   useMemo,
   useState,
 } from "react";
-import RatingSummary from "../components/RatingSummary";
-import ReviewForm from "../components/ReviewForm";
-import ReviewList from "../components/ReviewList";
+import RatingSummary from "../components/reviews/RatingSummary";
+import ReviewForm from "../components/reviews/ReviewForm";
+import ReviewList from "../components/reviews/ReviewList";
 import { getCurrentSession } from "../services/authServices";
 import { getBookings } from "../services/bookingService";
 import { createReview } from "../services/reviewService";
