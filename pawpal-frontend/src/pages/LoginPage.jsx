@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
+import { loginUser } from "../services/authServices.js";
 
 const emptyForm = {
   email: "",
@@ -10,47 +11,48 @@ const emptyForm = {
 export default function LoginPage() {
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setForm((currentForm) => {
-      return {
-        ...currentForm,
-        [name]: value,
-      };
-    });
+    setForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setMessage("");
+    setIsSubmitting(true);
 
-    const savedUser = JSON.parse(localStorage.getItem("pawPalUser"));
+    try {
+      const loginData = {
+        email: form.email.trim(),
+        password: form.password,
+      };
 
-    if (!savedUser) {
-      setMessage("No account exists yet. Please register first.");
-      return;
-    }
+      const data = await loginUser(loginData);
 
-    const emailMatches = savedUser.email === form.email;
-    const passwordMatches = savedUser.password === form.password;
+      localStorage.setItem("pawPalToken", data.token);
+      localStorage.setItem("pawPalUser", JSON.stringify(data.user));
+      localStorage.setItem("pawPalLoggedIn", "true");
 
-    if (!emailMatches || !passwordMatches) {
-      setMessage("Email or password does not match.");
-      return;
-    }
+      setMessage(`Welcome back, ${data.user.name}!`);
+      setForm(emptyForm);
 
-    localStorage.setItem("pawPalLoggedIn", "true");
-    localStorage.setItem("pawPalCurrentUser", JSON.stringify(savedUser));
-
-    setMessage(`Welcome back, ${savedUser.name}!`);
-    setForm(emptyForm);
-
-    if (savedUser.role === "sitter") {
-      navigate("/sitter-dashboard");
-    } else {
-      navigate("/owner-dashboard");
+      if (data.user.role === "sitter") {
+        navigate("/sitter-dashboard");
+      } else {
+        navigate("/owner-dashboard");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setMessage(error.message || "Unable to log in.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -70,6 +72,7 @@ export default function LoginPage() {
             value={form.email}
             onChange={handleChange}
             placeholder="Enter your email"
+            autoComplete="email"
             required
           />
         </div>
@@ -84,11 +87,14 @@ export default function LoginPage() {
             value={form.password}
             onChange={handleChange}
             placeholder="Enter your password"
+            autoComplete="current-password"
             required
           />
         </div>
 
-        <button type="submit">Log In</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Logging in..." : "Log In"}
+        </button>
 
         {message && <p className="auth-message">{message}</p>}
 

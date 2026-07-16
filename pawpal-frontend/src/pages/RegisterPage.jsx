@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/auth.css";
-import { registerUser } from "../services/authServices.JS";
+import { registerUser } from "../services/authServices.js";
 
 const emptyForm = {
   name: "",
@@ -16,35 +16,56 @@ const emptyForm = {
 export default function RegisterPage() {
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setForm((currentForm) => {
-      return {
-        ...currentForm,
-        [name]: value,
-      };
-    });
+    setForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setMessage("");
+    setIsSubmitting(true);
+
+    const registrationData = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      role: form.role,
+      city: form.city.trim(),
+      state: form.state.trim().toUpperCase(),
+      zipCode: form.zipCode.trim(),
+    };
+
+    console.log("Registration data being sent:", registrationData);
 
     try {
-      const data = await registerUser(form);
-      console.log(data);
+      const data = await registerUser(registrationData);
+
+      console.log("Registration response:", data);
+
+      localStorage.setItem("pawPalToken", data.token);
+      localStorage.setItem("pawPalUser", JSON.stringify(data.user));
+
       setMessage("Account created successfully.");
+      setForm(emptyForm);
     } catch (error) {
-      console.error(error);
-      setMessage("Unable to create account.");
+      console.error("Registration error:", error);
+      setMessage(error.message || "Unable to create account.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
     <section className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <p className="page-eyebrow"></p>
+        <p className="page-eyebrow">Join PawPal</p>
         <h1>Register</h1>
 
         <div className="auth-field">
@@ -52,10 +73,11 @@ export default function RegisterPage() {
           <input
             id="name"
             name="name"
-            onChange={handleChange}
-            required
             type="text"
             value={form.name}
+            onChange={handleChange}
+            autoComplete="name"
+            required
           />
         </div>
 
@@ -64,10 +86,11 @@ export default function RegisterPage() {
           <input
             id="email"
             name="email"
-            onChange={handleChange}
-            required
             type="email"
             value={form.email}
+            onChange={handleChange}
+            autoComplete="email"
+            required
           />
         </div>
 
@@ -76,11 +99,12 @@ export default function RegisterPage() {
           <input
             id="password"
             name="password"
-            onChange={handleChange}
-            required
             type="password"
             value={form.password}
+            onChange={handleChange}
+            autoComplete="new-password"
             minLength={8}
+            required
           />
         </div>
 
@@ -108,6 +132,7 @@ export default function RegisterPage() {
               type="text"
               value={form.city}
               onChange={handleChange}
+              autoComplete="address-level2"
               required
             />
           </div>
@@ -120,6 +145,9 @@ export default function RegisterPage() {
               type="text"
               value={form.state}
               onChange={handleChange}
+              autoComplete="address-level1"
+              maxLength={2}
+              placeholder="LA"
               required
             />
           </div>
@@ -132,12 +160,17 @@ export default function RegisterPage() {
               type="text"
               value={form.zipCode}
               onChange={handleChange}
+              autoComplete="postal-code"
+              inputMode="numeric"
+              maxLength={10}
               required
             />
           </div>
         </div>
 
-        <button type="submit">Create Account</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating account..." : "Create Account"}
+        </button>
 
         {message && <p className="auth-message">{message}</p>}
 

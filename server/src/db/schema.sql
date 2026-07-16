@@ -14,6 +14,9 @@ CREATE TABLE users (
   role VARCHAR(10) NOT NULL CHECK (role IN ('owner', 'sitter')),
   bio TEXT,
   phone VARCHAR(20),
+  city VARCHAR(100) NOT NULL,
+ state VARCHAR(2) NOT NULL,
+ zip_code VARCHAR(10) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

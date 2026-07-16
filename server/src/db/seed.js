@@ -5,7 +5,7 @@ async function seed() {
 
   // --- USERS (password_hash is a placeholder until auth is built in ticket #6) ---
   const { rows: users } = await pool.query(`
-    INSERT INTO users (name, email, password_hash, role, bio, phone) VALUES
+    INSERT INTO users (name, email, password_hash, role, bio, phone, city, state, zip_code) VALUES
     ('Maya Rodriguez', 'maya@example.com', 'placeholder_hash', 'owner', 'Dog mom of two. Travel a lot for work.', '555-0101'),
     ('James Chen', 'james@example.com', 'placeholder_hash', 'owner', 'First-time cat owner, very protective of Mochi.', '555-0102'),
     ('Priya Patel', 'priya@example.com', 'placeholder_hash', 'owner', 'Busy nurse, needs weekday walks for Biscuit.', '555-0103'),
