@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-function Sidebar({ isOpen }) {
+function Sidebar({ isOpen, sidebarRef }) {
   return (
-    <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+    <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : ""}`}>
       <ul>
         <li>
           <NavLink to="/dashboard">Dashboard</NavLink>

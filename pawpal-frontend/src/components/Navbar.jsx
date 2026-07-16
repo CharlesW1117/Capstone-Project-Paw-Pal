@@ -1,14 +1,45 @@
+import { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
+import Sidebar from "./Sidebar";
 import "./Navbar.css";
 
-function Navbar({ onToggleSidebar }) {
+function Navbar() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const sidebarRef = useRef(null);
+
+  const handleToggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // ✅ Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest(".menu-toggle")
+      ) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    if (isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarOpen]);
+
   return (
     <nav className="navbar">
-      <button className="menu-toggle" onClick={onToggleSidebar}>
+      <button className="menu-toggle" onClick={handleToggleSidebar}>
         ☰
       </button>
 
-      {/* 👇 Make PawPal clickable */}
       <NavLink to="/homepage" className="navbar-logo">
         🐾 PawPal
       </NavLink>
@@ -34,7 +65,10 @@ function Navbar({ onToggleSidebar }) {
         </li>
       </ul>
 
-      <button className="logout-btn">Logout</button>
+      <button className="login-btn">Login</button>
+
+      {/* 👇 Pass ref to Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} sidebarRef={sidebarRef} />
     </nav>
   );
 }
