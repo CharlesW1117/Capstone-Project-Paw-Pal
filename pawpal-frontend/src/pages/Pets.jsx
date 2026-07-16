@@ -3,6 +3,7 @@ import DeletePetDialog from "../components/pets/DeletePetDialog";
 import Modal from "../components/Modal";
 import PetForm from "../components/pets/PetForm";
 import PetList from "../components/pets/PetList";
+import Toast from "../components/Toast";
 import {
   createPet,
   deletePet,
@@ -25,6 +26,9 @@ function Pets() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
+
   const loadPets = useCallback(async () => {
     setIsLoading(true);
     setLoadError("");
@@ -33,9 +37,7 @@ function Pets() {
       const petResults = await getPets();
       setPets(petResults);
     } catch (requestError) {
-      setLoadError(
-        requestError.message || "Unable to load your pets.",
-      );
+      setLoadError(requestError.message || "Unable to load your pets.");
     } finally {
       setIsLoading(false);
     }
@@ -76,22 +78,24 @@ function Pets() {
         const savedPet = await updatePet(editingPet.id, petDetails);
 
         setPets((currentPets) =>
-          currentPets.map((pet) =>
-            pet.id === savedPet.id ? savedPet : pet,
-          ),
+          currentPets.map((pet) => (pet.id === savedPet.id ? savedPet : pet)),
         );
+
+        setToastMessage(`${savedPet.name} was updated.`);
+        setToastType("success");
       } else {
         const savedPet = await createPet(petDetails);
 
         setPets((currentPets) => [savedPet, ...currentPets]);
+
+        setToastMessage(`${savedPet.name} was added! 🎉`);
+        setToastType("success");
       }
 
       setIsFormOpen(false);
       setEditingPet(null);
     } catch (requestError) {
-      setFormError(
-        requestError.message || "Unable to save this pet.",
-      );
+      setFormError(requestError.message || "Unable to save this pet.");
     } finally {
       setIsSaving(false);
     }
@@ -123,16 +127,16 @@ function Pets() {
       await deletePet(petPendingDelete.id);
 
       setPets((currentPets) =>
-        currentPets.filter(
-          (pet) => pet.id !== petPendingDelete.id,
-        ),
+        currentPets.filter((pet) => pet.id !== petPendingDelete.id),
       );
+
+      setToastMessage(`${petPendingDelete.name} was removed.`);
+      setToastType("success");
 
       setPetPendingDelete(null);
     } catch (requestError) {
       setDeleteError(
-        requestError.message ||
-          "Unable to delete this pet profile.",
+        requestError.message || "Unable to delete this pet profile.",
       );
     } finally {
       setIsDeleting(false);
@@ -221,6 +225,12 @@ function Pets() {
           />
         </Modal>
       )}
+
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        onClose={() => setToastMessage("")}
+      />
     </main>
   );
 }
