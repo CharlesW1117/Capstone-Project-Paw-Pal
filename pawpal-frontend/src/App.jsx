@@ -17,6 +17,7 @@ import Calendar from "./pages/Calendar";
 import Messages from "./pages/Messages";
 import Reviews from "./pages/Reviews";
 import HomePage from "./pages/HomePage";
+import OwnerProfile from "./pages/OwnerProfile"; // ✅ Added import
 
 function App() {
   return (
@@ -24,12 +25,15 @@ function App() {
       <Navbar />
 
       <Routes>
+        {/* Redirect root to homepage */}
         <Route path="/" element={<Navigate to="/homepage" replace />} />
 
+        {/* Public routes */}
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        {/* Protected routes */}
         <Route
           path="/dashboard"
           element={
@@ -38,7 +42,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/pets"
           element={
@@ -47,7 +50,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/book"
           element={
@@ -56,7 +58,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/calendar"
           element={
@@ -65,7 +66,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/owner-profile"
+          element={
+            <ProtectedRoute>
+              <OwnerProfile />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/messages"
           element={
@@ -74,7 +82,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/reviews"
           element={
@@ -84,6 +91,7 @@ function App() {
           }
         />
 
+        {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/homepage" replace />} />
       </Routes>
     </Router>

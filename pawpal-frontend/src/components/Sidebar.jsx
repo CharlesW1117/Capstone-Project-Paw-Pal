@@ -2,11 +2,12 @@ import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 function Sidebar({ isOpen, sidebarRef, onClose }) {
-  function handleLinkClick() {
+  // ✅ Close sidebar when a link is clicked
+  const handleLinkClick = () => {
     if (onClose) {
       onClose();
     }
-  }
+  };
 
   return (
     <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : ""}`}>
@@ -44,6 +45,13 @@ function Sidebar({ isOpen, sidebarRef, onClose }) {
         <li>
           <NavLink to="/reviews" onClick={handleLinkClick}>
             Reviews
+          </NavLink>
+        </li>
+
+        {/* 🐾 New Profile link */}
+        <li>
+          <NavLink to="/owner-profile" onClick={handleLinkClick}>
+            Profile
           </NavLink>
         </li>
       </ul>
