@@ -1,0 +1,41 @@
+.pet-list {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 17.5rem), 1fr)
+  );
+  gap: 1.25rem;
+}
+
+.pet-list__empty {
+  display: flex;
+  min-height: 17.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  border: 0.0625rem dashed #c9c5cf;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  text-align: center;
+}
+
+.pet-list__empty > i {
+  display: flex;
+  margin-bottom: 0.875rem;
+  color: #007f7f;
+  font-size: 2.625rem;
+}
+
+.pet-list__empty h2 {
+  margin: 0 0 0.5rem;
+  color: #26212e;
+  font-size: 1.375rem;
+  letter-spacing: 0;
+}
+
+.pet-list__empty p {
+  max-width: 26.25rem;
+  color: #6b6375;
+  font-size: 0.9375rem;
+}

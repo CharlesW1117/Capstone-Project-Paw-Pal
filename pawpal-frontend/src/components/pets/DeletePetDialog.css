@@ -1,0 +1,149 @@
+.delete-pet-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.delete-pet-dialog__message {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.delete-pet-dialog__icon {
+  display: flex;
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff0f1;
+  color: #b92937;
+  font-size: 1.25rem;
+}
+
+.delete-pet-dialog__icon i {
+  display: flex;
+}
+
+.delete-pet-dialog__message h3 {
+  margin: 0 0 0.375rem;
+  color: #26212e;
+  font-size: 1.0625rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.delete-pet-dialog__message p {
+  color: #625b6c;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.delete-pet-dialog__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 0.0625rem solid #f0b8bd;
+  border-radius: 0.375rem;
+  background: #fff5f6;
+  color: #8f1723;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.delete-pet-dialog__error i {
+  display: flex;
+  flex: 0 0 auto;
+  margin-top: 0.125rem;
+}
+
+.delete-pet-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.delete-pet-dialog__button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 0.375rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.delete-pet-dialog__button--cancel {
+  border-color: #c9c5cf;
+  background: #ffffff;
+  color: #4d4656;
+}
+
+.delete-pet-dialog__button--cancel:hover:not(:disabled) {
+  background: #f5f5f7;
+}
+
+.delete-pet-dialog__button--delete {
+  border-color: #b92937;
+  background: #b92937;
+  color: #ffffff;
+}
+
+.delete-pet-dialog__button--delete:hover:not(:disabled) {
+  border-color: #951e2a;
+  background: #951e2a;
+}
+
+.delete-pet-dialog__button:focus-visible {
+  outline: 0.1875rem solid rgba(185, 41, 55, 0.25);
+  outline-offset: 0.125rem;
+}
+
+.delete-pet-dialog__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.delete-pet-dialog__spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 0.125rem solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: delete-pet-spin 0.8s linear infinite;
+}
+
+@keyframes delete-pet-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 40rem) {
+  .delete-pet-dialog__message {
+    flex-direction: column;
+  }
+
+  .delete-pet-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .delete-pet-dialog__button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .delete-pet-dialog__spinner {
+    animation-duration: 1.6s;
+  }
+}

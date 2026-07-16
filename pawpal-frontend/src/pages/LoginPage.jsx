@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const navigate = useNavigate();
 
   function handleChange(event) {
@@ -36,18 +37,12 @@ export default function LoginPage() {
 
       const data = await loginUser(loginData);
 
-      localStorage.setItem("pawPalToken", data.token);
-      localStorage.setItem("pawPalUser", JSON.stringify(data.user));
-      localStorage.setItem("pawPalLoggedIn", "true");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      setMessage(`Welcome back, ${data.user.name}!`);
       setForm(emptyForm);
 
-      if (data.user.role === "sitter") {
-        navigate("/sitter-dashboard");
-      } else {
-        navigate("/owner-dashboard");
-      }
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       setMessage(error.message || "Unable to log in.");
@@ -60,6 +55,7 @@ export default function LoginPage() {
     <section className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <p className="page-eyebrow">Welcome back</p>
+
         <h1>Log In</h1>
 
         <div className="auth-field">

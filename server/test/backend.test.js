@@ -1,0 +1,585 @@
+import assert from "node:assert/strict";
+import { after, beforeEach, describe, test } from "node:test";
+import {
+  authHeader,
+  closeDb,
+  resetTestDatabase,
+  seedTestData,
+  startTestServer,
+} from "./helpers.js";
+import { pool } from "../src/db/client.js";
+
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = "test-secret";
+}
+
+let server;
+
+async function request(path, options = {}) {
+  const { headers = {}, ...requestOptions } = options;
+
+  const response = await fetch(`${server.baseUrl}${path}`, {
+    ...requestOptions,
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+  });
+
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+
+  return {
+    status: response.status,
+    body,
+  };
+}
+
+async function createTestBooking(data, availabilityIndex = 0) {
+  const response = await request("/api/bookings", {
+    method: "POST",
+    headers: authHeader(data.owner),
+    body: JSON.stringify({
+      sitterId: data.sitter.id,
+      petId: data.ownerPet.id,
+      sitterServiceId: data.sitterService.id,
+      availabilityId: data.availability[availabilityIndex].id,
+    }),
+  });
+
+  assert.equal(response.status, 201);
+  return response.body.booking;
+}
+
+describe("backend API", () => {
+  beforeEach(async () => {
+    if (!server) {
+      server = await startTestServer();
+    }
+
+    await resetTestDatabase();
+  });
+
+  after(async () => {
+    if (server) {
+      await server.close();
+    }
+
+    await closeDb();
+  });
+
+  test("health endpoint returns ok", async () => {
+    const response = await request("/api/health");
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.status, "ok");
+  });
+
+  test("owner can create a pet with age zero", async () => {
+    const data = await seedTestData();
+
+    const response = await request("/api/pets", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        name: "Baby",
+        species: "Dog",
+        age: 0,
+      }),
+    });
+
+    assert.equal(response.status, 201);
+    assert.equal(response.body.pet.age, 0);
+  });
+
+  test("owner cannot list another owner's pets", async () => {
+    const data = await seedTestData();
+
+    const response = await request("/api/pets", {
+      headers: authHeader(data.owner),
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.pets.length, 1);
+    assert.equal(response.body.pets[0].ownerId, data.owner.id);
+  });
+
+  test("sitter cannot access owner-only pet routes", async () => {
+    const data = await seedTestData();
+
+    const response = await request("/api/pets", {
+      headers: authHeader(data.sitter),
+    });
+
+    assert.equal(response.status, 403);
+  });
+
+  test("public availability only returns future unbooked slots", async () => {
+    const data = await seedTestData();
+
+    await pool.query(
+      `
+      INSERT INTO availability (
+        sitter_id,
+        date,
+        start_time,
+        end_time,
+        is_booked
+      )
+      VALUES
+        ($1, CURRENT_DATE - 1, '08:00', '08:30', false),
+        ($1, CURRENT_DATE + 3, '11:00', '11:30', true);
+      `,
+      [data.sitter.id],
+    );
+
+    const response = await request(
+      `/api/sitters/${data.sitter.id}/availability`,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.availability.length, 2);
+
+    assert.ok(
+      response.body.availability.every(
+        (slot) => slot.isBooked === false,
+      ),
+    );
+  });
+
+  test("sitter cannot create availability in the past", async () => {
+    const data = await seedTestData();
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const yesterdayString = yesterday
+      .toISOString()
+      .slice(0, 10);
+
+    const response = await request("/api/availability", {
+      method: "POST",
+      headers: authHeader(data.sitter),
+      body: JSON.stringify({
+        date: yesterdayString,
+        startTime: "09:00",
+        endTime: "09:30",
+      }),
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(
+      response.body.error,
+      "date cannot be in the past",
+    );
+  });
+
+  test("owner can create booking with sitter service", async () => {
+    const data = await seedTestData();
+
+    const response = await request("/api/bookings", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        sitterId: data.sitter.id,
+        petId: data.ownerPet.id,
+        sitterServiceId: data.sitterService.id,
+        availabilityId: data.availability[0].id,
+      }),
+    });
+
+    assert.equal(response.status, 201);
+    assert.equal(response.body.booking.ownerId, data.owner.id);
+    assert.equal(response.body.booking.sitterId, data.sitter.id);
+    assert.equal(response.body.booking.petId, data.ownerPet.id);
+
+    assert.equal(
+      response.body.booking.sitterServiceId,
+      data.sitterService.id,
+    );
+
+    assert.equal(
+      response.body.booking.availabilityId,
+      data.availability[0].id,
+    );
+
+    assert.equal(response.body.booking.status, "pending");
+
+    const { rows } = await pool.query(
+      `SELECT is_booked FROM availability WHERE id = $1`,
+      [data.availability[0].id],
+    );
+
+    assert.equal(rows[0].is_booked, true);
+  });
+
+  test("owner cannot create booking with someone else's pet", async () => {
+    const data = await seedTestData();
+
+    const response = await request("/api/bookings", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        sitterId: data.sitter.id,
+        petId: data.otherOwnerPet.id,
+        sitterServiceId: data.sitterService.id,
+        availabilityId: data.availability[0].id,
+      }),
+    });
+
+    assert.equal(response.status, 403);
+  });
+
+  test("booking list returns bookings wrapper", async () => {
+    const data = await seedTestData();
+
+    await createTestBooking(data);
+
+    const response = await request("/api/bookings", {
+      headers: authHeader(data.owner),
+    });
+
+    assert.equal(response.status, 200);
+    assert.ok(Array.isArray(response.body.bookings));
+    assert.equal(response.body.bookings.length, 1);
+
+    assert.equal(
+      response.body.bookings[0].serviceName,
+      "Dog Walking",
+    );
+  });
+
+  test("declined booking releases availability", async () => {
+    const data = await seedTestData();
+    const booking = await createTestBooking(data);
+
+    const updateResponse = await request(
+      `/api/bookings/${booking.id}/status`,
+      {
+        method: "PATCH",
+        headers: authHeader(data.sitter),
+        body: JSON.stringify({
+          status: "declined",
+        }),
+      },
+    );
+
+    assert.equal(updateResponse.status, 200);
+    assert.equal(
+      updateResponse.body.booking.status,
+      "declined",
+    );
+
+    const { rows } = await pool.query(
+      `SELECT is_booked FROM availability WHERE id = $1`,
+      [data.availability[0].id],
+    );
+
+    assert.equal(rows[0].is_booked, false);
+  });
+
+  test("owner can review completed booking once", async () => {
+    const data = await seedTestData();
+
+    const { rows: bookingRows } = await pool.query(
+      `
+      INSERT INTO bookings (
+        owner_id,
+        sitter_id,
+        pet_id,
+        sitter_service_id,
+        availability_id,
+        date,
+        start_time,
+        end_time,
+        status,
+        total_price
+      )
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        CURRENT_DATE,
+        '09:00',
+        '09:30',
+        'completed',
+        25.00
+      )
+      RETURNING id;
+      `,
+      [
+        data.owner.id,
+        data.sitter.id,
+        data.ownerPet.id,
+        data.sitterService.id,
+        data.availability[0].id,
+      ],
+    );
+
+    const response = await request("/api/reviews", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        bookingId: bookingRows[0].id,
+        rating: 5,
+        comment: "Great sitter",
+      }),
+    });
+
+    assert.equal(response.status, 201);
+    assert.equal(
+      response.body.review.bookingId,
+      bookingRows[0].id,
+    );
+    assert.equal(response.body.review.rating, 5);
+
+    const duplicateResponse = await request("/api/reviews", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        bookingId: bookingRows[0].id,
+        rating: 5,
+        comment: "Second review",
+      }),
+    });
+
+    assert.equal(duplicateResponse.status, 409);
+  });
+
+  test("message endpoints require authentication", async () => {
+    const response = await request("/api/messages");
+
+    assert.equal(response.status, 401);
+    assert.equal(response.body.error, "Login required");
+  });
+
+  test("booking participants can exchange and read messages", async () => {
+    const data = await seedTestData();
+    const booking = await createTestBooking(data);
+
+    const ownerConversations = await request("/api/messages", {
+      headers: authHeader(data.owner),
+    });
+
+    assert.equal(ownerConversations.status, 200);
+    assert.equal(ownerConversations.body.conversations.length, 1);
+
+    const initialConversation =
+      ownerConversations.body.conversations[0];
+
+    assert.equal(initialConversation.id, booking.id);
+    assert.equal(initialConversation.bookingId, booking.id);
+
+    assert.equal(
+      initialConversation.participantId,
+      data.sitter.id,
+    );
+
+    assert.equal(
+      initialConversation.participantName,
+      data.sitter.name,
+    );
+
+    assert.equal(
+      initialConversation.bookingLabel,
+      "Dog Walking - Rocky",
+    );
+
+    assert.equal(initialConversation.lastMessage, null);
+    assert.equal(initialConversation.unreadCount, 0);
+
+    const sendResponse = await request("/api/messages", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        bookingId: booking.id,
+        body: "Is tomorrow still a good time?",
+      }),
+    });
+
+    assert.equal(sendResponse.status, 201);
+    assert.equal(
+      sendResponse.body.message.bookingId,
+      booking.id,
+    );
+    assert.equal(
+      sendResponse.body.message.senderId,
+      data.owner.id,
+    );
+    assert.equal(
+      sendResponse.body.message.recipientId,
+      data.sitter.id,
+    );
+    assert.equal(
+      sendResponse.body.message.body,
+      "Is tomorrow still a good time?",
+    );
+
+    const sitterConversations = await request("/api/messages", {
+      headers: authHeader(data.sitter),
+    });
+
+    assert.equal(sitterConversations.status, 200);
+    assert.equal(
+      sitterConversations.body.conversations[0].unreadCount,
+      1,
+    );
+    assert.equal(
+      sitterConversations.body.conversations[0].lastMessage,
+      "Is tomorrow still a good time?",
+    );
+
+    const messagesResponse = await request(
+      `/api/messages/${booking.id}`,
+      {
+        headers: authHeader(data.sitter),
+      },
+    );
+
+    assert.equal(messagesResponse.status, 200);
+    assert.equal(messagesResponse.body.messages.length, 1);
+
+    assert.equal(
+      messagesResponse.body.messages[0].body,
+      "Is tomorrow still a good time?",
+    );
+
+    assert.ok(messagesResponse.body.messages[0].readAt);
+
+    const conversationsAfterRead = await request(
+      "/api/messages",
+      {
+        headers: authHeader(data.sitter),
+      },
+    );
+
+    assert.equal(
+      conversationsAfterRead.body.conversations[0].unreadCount,
+      0,
+    );
+  });
+
+  test("unrelated users cannot access booking messages", async () => {
+    const data = await seedTestData();
+    const booking = await createTestBooking(data);
+
+    const readResponse = await request(
+      `/api/messages/${booking.id}`,
+      {
+        headers: authHeader(data.otherOwner),
+      },
+    );
+
+    assert.equal(readResponse.status, 404);
+
+    assert.equal(
+      readResponse.body.error,
+      "Booking conversation not found",
+    );
+
+    const sendResponse = await request("/api/messages", {
+      method: "POST",
+      headers: authHeader(data.otherOwner),
+      body: JSON.stringify({
+        bookingId: booking.id,
+        body: "I should not be able to send this.",
+      }),
+    });
+
+    assert.equal(sendResponse.status, 404);
+
+    assert.equal(
+      sendResponse.body.error,
+      "Booking conversation not found",
+    );
+  });
+
+  test("message body validation rejects invalid messages", async () => {
+    const data = await seedTestData();
+    const booking = await createTestBooking(data);
+
+    const emptyResponse = await request("/api/messages", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        bookingId: booking.id,
+        body: "   ",
+      }),
+    });
+
+    assert.equal(emptyResponse.status, 400);
+
+    assert.equal(
+      emptyResponse.body.error,
+      "Message body cannot be empty",
+    );
+
+    const longResponse = await request("/api/messages", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        bookingId: booking.id,
+        body: "a".repeat(2001),
+      }),
+    });
+
+    assert.equal(longResponse.status, 400);
+
+    assert.equal(
+      longResponse.body.error,
+      "Message body cannot exceed 2000 characters",
+    );
+  });
+
+  test("booking messages are returned in chronological order", async () => {
+    const data = await seedTestData();
+    const booking = await createTestBooking(data);
+
+    const firstResponse = await request("/api/messages", {
+      method: "POST",
+      headers: authHeader(data.owner),
+      body: JSON.stringify({
+        bookingId: booking.id,
+        body: "First message",
+      }),
+    });
+
+    assert.equal(firstResponse.status, 201);
+
+    const secondResponse = await request("/api/messages", {
+      method: "POST",
+      headers: authHeader(data.sitter),
+      body: JSON.stringify({
+        bookingId: booking.id,
+        body: "Second message",
+      }),
+    });
+
+    assert.equal(secondResponse.status, 201);
+
+    const messagesResponse = await request(
+      `/api/messages/${booking.id}`,
+      {
+        headers: authHeader(data.owner),
+      },
+    );
+
+    assert.equal(messagesResponse.status, 200);
+
+    assert.deepEqual(
+      messagesResponse.body.messages.map(
+        (message) => message.body,
+      ),
+      ["First message", "Second message"],
+    );
+
+    assert.deepEqual(
+      messagesResponse.body.messages.map(
+        (message) => message.senderId,
+      ),
+      [data.owner.id, data.sitter.id],
+    );
+  });
+});

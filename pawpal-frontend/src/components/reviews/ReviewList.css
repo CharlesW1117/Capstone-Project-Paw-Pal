@@ -1,0 +1,147 @@
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-list__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.review-list__heading h2 {
+  margin: 0;
+  color: #26212e;
+  font-size: 1.375rem;
+  letter-spacing: 0;
+}
+
+.review-list__heading > span {
+  color: #746d7d;
+  font-size: 0.8125rem;
+}
+
+.review-list__items {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 20rem), 1fr)
+  );
+  gap: 1rem;
+}
+
+.review-list__item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 0.0625rem solid #dedbe3;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  box-shadow: 0 0.25rem 0.75rem rgba(44, 29, 86, 0.05);
+}
+
+.review-list__item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.review-list__reviewer {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.review-list__avatar {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eee9f8;
+  color: #523d81;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.review-list__reviewer > div:last-child {
+  min-width: 0;
+}
+
+.review-list__reviewer h3 {
+  margin: 0 0 0.1875rem;
+  color: #342e3c;
+  font-size: 0.9375rem;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.review-list__reviewer time {
+  color: #746d7d;
+  font-size: 0.75rem;
+}
+
+.review-list__stars {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.1875rem;
+  color: #df8d00;
+  font-size: 0.8125rem;
+}
+
+.review-list__stars i {
+  display: flex;
+}
+
+.review-list__comment {
+  color: #625b6c;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.review-list__empty {
+  display: flex;
+  min-height: 15rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  border: 0.0625rem dashed #c9c5cf;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  text-align: center;
+}
+
+.review-list__empty > i {
+  display: flex;
+  margin-bottom: 0.875rem;
+  color: #523d81;
+  font-size: 2.25rem;
+}
+
+.review-list__empty h2 {
+  margin: 0 0 0.5rem;
+  color: #26212e;
+  font-size: 1.25rem;
+  letter-spacing: 0;
+}
+
+.review-list__empty p {
+  color: #746d7d;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 30rem) {
+  .review-list__item-header {
+    flex-direction: column;
+  }
+}

@@ -132,7 +132,7 @@ router.post("/login", async (req, res, next) => {
         zip_code AS "zipCode",
         password_hash
       FROM users
-      WHERE email = $1
+      WHERE email = $1;
       `,
       [email.trim().toLowerCase()],
     );
