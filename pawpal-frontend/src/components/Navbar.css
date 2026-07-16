@@ -1,12 +1,14 @@
+/* 🌟 Navbar Layout */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: var(--color-primary);
-  color: var(--color-secondary);
+  color: rgb(90, 46, 148);
   padding: 1rem 2rem;
 }
 
+/* 🔗 Navigation Links */
 .navbar-links {
   display: flex;
   gap: 1rem;
@@ -16,17 +18,71 @@
   color: var(--color-secondary);
   text-decoration: none;
   font-weight: 500;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
+/* ✨ Flash animation */
+@keyframes flashText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Apply flashing on hover */
+.navbar-links a:hover {
+  animation: flashText 0.8s infinite;
+  transform: scale(1.1);
+}
+
+/* Active link underline */
 .navbar-links a.active {
   border-bottom: 2px solid var(--color-accent);
 }
 
-.logout-btn {
+/* 🚪 Animated Login Button */
+.login-btn {
   background-color: var(--color-accent);
   color: var(--color-text);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 💫 Glow pulse animation */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--color-accent), 0 0 10px var(--color-accent);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--color-accent), 0 0 25px var(--color-accent);
+  }
+}
+
+/* 🎨 Hover effect */
+.login-btn:hover {
+  animation: glowPulse 1.2s infinite;
+  transform: translateY(-2px);
+}
+
+/* 📋 List Reset */
+li {
+  list-style: none;
+}
+
+/* 🐾 PawPal Logo */
+.navbar-logo {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: purple;
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.1);
 }
