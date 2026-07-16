@@ -17,7 +17,7 @@ export function getCurrentSession() {
     const currentTime = Date.now() / 1000;
 
     if (decoded.exp && decoded.exp < currentTime) {
-      localStorage.removeItem("token");
+      logoutUser();
       return null;
     }
 
@@ -27,9 +27,18 @@ export function getCurrentSession() {
       role: decoded.role,
     };
   } catch {
-    localStorage.removeItem("token");
+    logoutUser();
     return null;
   }
+}
+
+export function logoutUser() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  localStorage.removeItem("pawPalToken");
+  localStorage.removeItem("pawPalUser");
+  localStorage.removeItem("pawPalLoggedIn");
 }
 
 export async function registerUser(formData) {

@@ -1,13 +1,13 @@
-import { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 import Login from "./pages/LoginPage";
 import Register from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
@@ -19,18 +19,14 @@ import Reviews from "./pages/Reviews";
 import HomePage from "./pages/HomePage";
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
   return (
     <Router>
-      <Navbar onToggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} />
+      <Navbar />
 
       <Routes>
-        <Route path="/" element={<Navigate to="/homepage" />} />
-        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/" element={<Navigate to="/homepage" replace />} />
 
+        <Route path="/homepage" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -79,7 +75,16 @@ function App() {
           }
         />
 
-        <Route path="/reviews" element={<Reviews />} />
+        <Route
+          path="/reviews"
+          element={
+            <ProtectedRoute>
+              <Reviews />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/homepage" replace />} />
       </Routes>
     </Router>
   );
