@@ -27,27 +27,10 @@ function makeToken(user) {
 
 router.post("/register", async (req, res, next) => {
   try {
-    const {
-      name,
-      email,
-      password,
-      role,
-      city,
-      state,
-      zipCode,
-      phone,
-      bio,
-    } = req.body;
+    const { name, email, password, role, city, state, zipCode, phone, bio } =
+      req.body;
 
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !role ||
-      !city ||
-      !state ||
-      !zipCode
-    ) {
+    if (!name || !email || !password || !role || !city || !state || !zipCode) {
       return res.status(400).json({
         error:
           "name, email, password, role, city, state, and zipCode are required",
@@ -93,7 +76,7 @@ router.post("/register", async (req, res, next) => {
         phone,
         city,
         state,
-        zip_code AS "zipCode";
+        zip_code AS "zipCode"
       `,
       [
         name.trim(),

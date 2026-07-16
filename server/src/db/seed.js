@@ -3,12 +3,7 @@ import { pool } from "./client.js";
 
 const DEMO_PASSWORD = "PawPal123!";
 
-async function insertSitterService(
-  client,
-  sitterId,
-  serviceId,
-  priceOverride,
-) {
+async function insertSitterService(client, sitterId, serviceId, priceOverride) {
   const { rows } = await client.query(
     `
     INSERT INTO sitter_services (
@@ -59,14 +54,7 @@ async function insertAvailability(
 
 async function insertBooking(
   client,
-  {
-    ownerId,
-    sitterId,
-    petId,
-    sitterServiceId,
-    availabilityId,
-    status,
-  },
+  { ownerId, sitterId, petId, sitterServiceId, availabilityId, status },
 ) {
   const { rows } = await client.query(
     `
@@ -104,14 +92,7 @@ async function insertBooking(
     WHERE availability.id = $5
     RETURNING id, status;
     `,
-    [
-      ownerId,
-      sitterId,
-      petId,
-      sitterServiceId,
-      availabilityId,
-      status,
-    ],
+    [ownerId, sitterId, petId, sitterServiceId, availabilityId, status],
   );
 
   if (!rows[0]) {
@@ -320,12 +301,8 @@ async function seed() {
       RETURNING id, name;
     `);
 
-    const walking = services.find(
-      (service) => service.name === "Dog Walking",
-    );
-    const sitting = services.find(
-      (service) => service.name === "Pet Sitting",
-    );
+    const walking = services.find((service) => service.name === "Dog Walking");
+    const sitting = services.find((service) => service.name === "Pet Sitting");
     const boarding = services.find(
       (service) => service.name === "Overnight Boarding",
     );
@@ -389,38 +366,10 @@ async function seed() {
       false,
     );
 
-    await insertAvailability(
-      client,
-      sarah.id,
-      2,
-      "09:00",
-      "12:00",
-      false,
-    );
-    await insertAvailability(
-      client,
-      jordan.id,
-      1,
-      "14:00",
-      "18:00",
-      false,
-    );
-    await insertAvailability(
-      client,
-      luis.id,
-      1,
-      "06:00",
-      "08:00",
-      false,
-    );
-    await insertAvailability(
-      client,
-      luis.id,
-      2,
-      "17:00",
-      "19:00",
-      false,
-    );
+    await insertAvailability(client, sarah.id, 2, "09:00", "12:00", false);
+    await insertAvailability(client, jordan.id, 1, "14:00", "18:00", false);
+    await insertAvailability(client, luis.id, 1, "06:00", "08:00", false);
+    await insertAvailability(client, luis.id, 2, "17:00", "19:00", false);
 
     const completedBooking = await insertBooking(client, {
       ownerId: priya.id,

@@ -24,7 +24,7 @@ export default function HomePage() {
               Find a sitter
             </Link>
 
-            <Link className="hero-button secondary-button" to="/">
+            <Link className="hero-button secondary-button" to="/register">
               Become a sitter
             </Link>
           </div>
