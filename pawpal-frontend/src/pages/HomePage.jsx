@@ -16,11 +16,8 @@ export default function HomePage() {
           <p className="hero-text">
             Find trusted pet sitters and dog walkers in your neighborhood.
           </p>
-          <div
-            //add routing to Links
-            className="hero-actions"
-          >
-            <Link className="hero-button primary-button" to="/">
+          <div className="hero-actions">
+            <Link className="hero-button primary-button" to="/sitters">
               Find a sitter
             </Link>
 
@@ -30,10 +27,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="hero-image-card">
-          <div
-            //add image
-            className="pet-image-holder"
-          >
+          <div className="pet-image-holder">
             <img src={dogImage} alt="dog"></img>
           </div>
         </div>
@@ -44,7 +38,7 @@ export default function HomePage() {
         <div className="steps-grid">
           <article className="step-card">
             <span className="step-icon i">
-              <i class="fi fi-rs-search"></i>
+              <i className="fi fi-rs-search"></i>
             </span>
             <h3>1. Search</h3>
             <p>Find pet sitters or walkers near you.</p>

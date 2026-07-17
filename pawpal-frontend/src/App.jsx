@@ -17,6 +17,7 @@ import Calendar from "./pages/Calendar";
 import Messages from "./pages/Messages";
 import Reviews from "./pages/Reviews";
 import HomePage from "./pages/HomePage";
+import Sitters from "./pages/Sitters";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,6 +31,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/homepage" />} />
         <Route path="/homepage" element={<HomePage />} />
+        <Route path="/sitters" element={<Sitters />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
