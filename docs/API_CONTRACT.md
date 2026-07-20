@@ -1,41 +1,76 @@
 # PawPal Frontend API Contract
 
-Base URL:
+API contract between the PawPal frontend and the standalone backend:
 
-```text
-http://localhost:3000/api
+https://github.com/AntoniRom17/Capstone-Project-Paw-Pal-Back
+
+## Configuration
+
+```env
+VITE_API_URL=http://localhost:3000/api
 ```
 
-Protected routes:
+The frontend defaults to `http://localhost:3000/api`.
 
-```text
+Protected requests require:
+
+```http
 Authorization: Bearer <token>
+Content-Type: application/json
 ```
 
-Error shape:
+All errors use:
 
 ```json
-{ "error": "Error message" }
+{
+  "error": "Error message"
+}
 ```
 
----
+All route IDs must be positive integers. Dates use `YYYY-MM-DD`; request times use `HH:MM`.
 
-# Shared Fields
+## Roles
 
-```js
-User: id, name, email, role, bio, phone, city, state, zipCode
+- `owner`: manages pets, creates bookings, cancels bookings, and submits reviews.
+- `sitter`: manages availability and services, accepts or declines bookings, and completes bookings.
+- Both roles can manage their profile, view bookings, and exchange booking messages.
 
-Sitter: id, name, bio, city, state, zipCode, trustScore, backgroundCheckStatus, onTimePercentage, averageRating, reviewCount, services
+## Shared Objects
 
-SitterService: sitterServiceId, serviceId, name, description, price
+```text
+User:
+id, name, email, role, bio, phone, city, state, zipCode,
+trustScore, backgroundCheckStatus, onTimePercentage,
+isActive, deactivatedAt, createdAt
 
-Pet: id, ownerId, name, species, breed, age, careNotes, photoUrl
+Sitter:
+id, name, bio, phone, city, state, zipCode, trustScore,
+backgroundCheckStatus, onTimePercentage, averageRating,
+reviewCount, services
 
-Availability: id, sitterId, date, startTime, endTime, isBooked
+SitterService:
+sitterServiceId, sitterId, serviceId, name, description, price
 
-Booking: id, ownerId, sitterId, petId, sitterServiceId, availabilityId, status, totalPrice, date, startTime, endTime
+Pet:
+id, ownerId, name, species, breed, age, careNotes, photoUrl
 
-Review: id, bookingId, reviewerId, sitterId, rating, comment, createdAt
+Availability:
+id, sitterId, date, startTime, endTime, isBooked
+
+Booking:
+id, ownerId, sitterId, petId, sitterServiceId, availabilityId,
+status, totalPrice, date, startTime, endTime, petName,
+ownerName, sitterName, serviceName
+
+Message:
+id, bookingId, senderId, recipientId, body, readAt, createdAt
+
+Review:
+id, bookingId, reviewerId, sitterId, rating, wasOnTime,
+comment, createdAt
+
+TrustMetrics:
+sitterId, trustScore, onTimePercentage, backgroundCheckStatus
 ```
 
 Booking statuses:
@@ -44,307 +79,256 @@ Booking statuses:
 pending, accepted, declined, cancelled, completed
 ```
 
----
+Background-check statuses:
 
-# Endpoints
-
-## GET /api/health
-
-Response:
-
-```json
-{ "status": "ok", "message": "PawPal backend is running", "environment": "development" }
+```text
+not_submitted, pending, verified, rejected
 ```
 
----
+## Health And Authentication
 
-## POST /api/auth/register
+| Method | Endpoint | Access | Request | Success response |
+| --- | --- | --- | --- | --- |
+| `GET` | `/api/health` | Public | None | `{ status, message, environment }` |
+| `POST` | `/api/auth/register` | Public | Registration fields | `{ token, user }` |
+| `POST` | `/api/auth/login` | Public | `{ email, password }` | `{ token, user }` |
 
-Request:
-
-```json
-{ "name": "Antoni Roman", "email": "toni@example.com", "password": "password123", "role": "owner", "city": "Chicago", "state": "IL", "zipCode": "60601" }
-```
-
-Response:
+Registration request:
 
 ```json
-{ "token": "jwt_token_here", "user": { "id": 1, "name": "Antoni Roman", "email": "toni@example.com", "role": "owner" } }
+{
+  "name": "Antoni Roman",
+  "email": "toni@example.com",
+  "password": "password123",
+  "role": "owner",
+  "city": "Chicago",
+  "state": "IL",
+  "zipCode": "60601",
+  "phone": null,
+  "bio": null
+}
 ```
 
----
+Required registration fields are `name`, `email`, `password`, `role`, `city`, `state`, and `zipCode`.
 
-## POST /api/auth/login
+Passwords must contain 8 to 128 characters. Duplicate emails return `409 Conflict`.
 
-Request:
+## Account Management
 
-```json
-{ "email": "toni@example.com", "password": "password123" }
+| Method | Endpoint | Request | Success response |
+| --- | --- | --- | --- |
+| `GET` | `/api/users/me` | None | `{ user }` |
+| `PATCH` | `/api/users/me` | Profile fields | `{ user }` |
+| `PATCH` | `/api/users/me/password` | `{ currentPassword, newPassword }` | `{ message }` |
+| `DELETE` | `/api/users/me` | `{ password }` | `{ message }` |
+
+Supported profile fields:
+
+```text
+name, email, bio, phone, city, state, zipCode
 ```
 
-Response:
+`bio` and `phone` can be cleared with `null`.
 
-```json
-{ "token": "jwt_token_here", "user": { "id": 1, "name": "Antoni Roman", "email": "toni@example.com", "role": "owner" } }
-```
+Accounts with pending or accepted bookings cannot be deactivated.
 
----
+## Services And Sitters
 
-## GET /api/services
+| Method | Endpoint | Access | Request or query | Success response |
+| --- | --- | --- | --- | --- |
+| `GET` | `/api/services` | Public | None | `{ services }` |
+| `GET` | `/api/sitters` | Public | Search filters | `{ sitters }` |
+| `GET` | `/api/sitters/:id` | Public | None | `{ sitter }` |
+| `POST` | `/api/sitters/me/services` | Sitter | `{ serviceId, priceOverride? }` | `{ sitterService }` |
+| `PATCH` | `/api/sitters/me/services/:id` | Sitter | `{ priceOverride }` | `{ sitterService }` |
+| `DELETE` | `/api/sitters/me/services/:id` | Sitter | None | `{ message }` |
+| `POST` | `/api/sitters/me/background-check` | Sitter | None | `{ backgroundCheck, trustMetrics }` |
 
-Response:
-
-```json
-{ "services": [{ "id": 1, "name": "Dog Walking", "description": "30-minute walk.", "basePrice": 20 }] }
-```
-
----
-
-## GET /api/sitters
-
-Query params:
+Sitter search parameters:
 
 ```text
 service, city, state, zipCode, maxPrice, minRating
 ```
 
-Response:
+`priceOverride` must be non-negative. Setting it to `null` restores the service's base price.
 
-```json
-{ "sitters": [{ "id": 4, "name": "Sarah Miller", "city": "Chicago", "state": "IL", "zipCode": "60601", "trustScore": 94, "averageRating": 4.8, "reviewCount": 12, "services": [{ "sitterServiceId": 9, "serviceId": 1, "name": "Dog Walking", "price": 22 }] }] }
+A sitter service attached to a booking cannot be deleted.
+
+## Provider Background-Check Webhook
+
+| Method | Endpoint | Access | Request | Success response |
+| --- | --- | --- | --- | --- |
+| `PATCH` | `/api/background-checks/:sitterId` | Provider | `{ status }` | `{ backgroundCheck, trustMetrics }` |
+
+Required header:
+
+```http
+x-background-check-secret: <BACKGROUND_CHECK_WEBHOOK_SECRET>
 ```
 
----
-
-## GET /api/sitters/:id
-
-Response:
-
-```json
-{ "sitter": { "id": 4, "name": "Sarah Miller", "bio": "Experienced dog walker.", "services": [], "availability": [], "reviews": [] } }
-```
-
----
-
-## POST /api/sitters/me/services
-
-Protected: sitter
-
-Request:
-
-```json
-{ "serviceId": 1, "priceOverride": 22 }
-```
-
-Response:
-
-```json
-{ "sitterService": { "sitterServiceId": 9, "sitterId": 4, "serviceId": 1, "name": "Dog Walking", "price": 22 } }
-```
-
----
-
-## GET /api/pets
-
-Protected: owner
-
-Response:
-
-```json
-{ "pets": [] }
-```
-
----
-
-## POST /api/pets
-
-Protected: owner
-
-Request:
-
-```json
-{ "name": "Rocky", "species": "Dog", "breed": "Golden Retriever", "age": 4, "careNotes": "Allergic to chicken.", "photoUrl": "https://example.com/rocky.jpg" }
-```
-
-Response:
-
-```json
-{ "pet": { "id": 3, "ownerId": 1, "name": "Rocky", "species": "Dog", "breed": "Golden Retriever", "age": 4, "careNotes": "Allergic to chicken.", "photoUrl": "https://example.com/rocky.jpg" } }
-```
-
----
-
-## GET /api/pets/:id
-
-Protected: owner
-
-Response:
-
-```json
-{ "pet": {} }
-```
-
----
-
-## PUT /api/pets/:id
-
-Protected: owner
-
-Request:
-
-```json
-{ "name": "Rocky", "species": "Dog", "breed": "Golden Retriever", "age": 5, "careNotes": "Needs medication with dinner.", "photoUrl": "https://example.com/rocky.jpg" }
-```
-
-Response:
-
-```json
-{ "pet": {} }
-```
-
----
-
-## DELETE /api/pets/:id
-
-Protected: owner
-
-Response:
-
-```json
-{ "message": "Pet deleted successfully" }
-```
-
----
-
-## GET /api/sitters/:id/availability
-
-Response:
-
-```json
-{ "availability": [] }
-```
-
----
-
-## POST /api/availability
-
-Protected: sitter
-
-Request:
-
-```json
-{ "date": "2026-07-15", "startTime": "09:00", "endTime": "09:30" }
-```
-
-Response:
-
-```json
-{ "availability": { "id": 11, "sitterId": 4, "date": "2026-07-15", "startTime": "09:00", "endTime": "09:30", "isBooked": false } }
-```
-
----
-
-## PUT /api/availability/:id
-
-Protected: sitter
-
-Request:
-
-```json
-{ "date": "2026-07-15", "startTime": "10:00", "endTime": "10:30" }
-```
-
-Response:
-
-```json
-{ "availability": {} }
-```
-
----
-
-## DELETE /api/availability/:id
-
-Protected: sitter
-
-Response:
-
-```json
-{ "message": "Availability deleted successfully" }
-```
-
----
-
-## POST /api/bookings
-
-Protected: owner
-
-Request:
-
-```json
-{ "petId": 3, "sitterId": 4, "sitterServiceId": 9, "availabilityId": 11 }
-```
-
-Response:
-
-```json
-{ "booking": { "id": 15, "ownerId": 1, "sitterId": 4, "petId": 3, "sitterServiceId": 9, "availabilityId": 11, "status": "pending", "totalPrice": 22, "date": "2026-07-15", "startTime": "09:00", "endTime": "09:30" } }
-```
-
----
-
-## GET /api/bookings
-
-Protected: owner or sitter
-
-Response:
-
-```json
-{ "bookings": [] }
-```
-
----
-
-## PATCH /api/bookings/:id/status
-
-Protected: owner or sitter
-
-Request:
-
-```json
-{ "status": "accepted" }
-```
-
-Response:
-
-```json
-{ "booking": { "id": 15, "status": "accepted", "availabilityId": 11, "isAvailabilityBooked": true } }
-```
-
----
-
-## POST /api/reviews
-
-Protected: owner
-
-Request:
-
-```json
-{ "bookingId": 15, "rating": 5, "comment": "Great communication and very reliable." }
-```
-
-Response:
-
-```json
-{ "review": { "id": 7, "bookingId": 15, "reviewerId": 1, "sitterId": 4, "rating": 5, "comment": "Great communication and very reliable.", "createdAt": "2026-07-16T15:30:00.000Z" } }
-```
-
----
-
-# Mock Files
+Accepted provider statuses:
 
 ```text
-client/src/mocks/sitters.js
-client/src/mocks/pets.js
-client/src/mocks/bookings.js
-client/src/mocks/reviews.js
+verified, rejected
 ```
+
+This endpoint is not called directly by the frontend.
+
+## Pets
+
+All pet endpoints require an authenticated owner and only access that owner's pets.
+
+| Method | Endpoint | Request | Success response |
+| --- | --- | --- | --- |
+| `GET` | `/api/pets` | None | `{ pets }` |
+| `POST` | `/api/pets` | Pet fields | `{ pet }` |
+| `GET` | `/api/pets/:id` | None | `{ pet }` |
+| `PUT` | `/api/pets/:id` | Pet fields | `{ pet }` |
+| `DELETE` | `/api/pets/:id` | None | `{ message }` |
+
+Pet request:
+
+```json
+{
+  "name": "Rocky",
+  "species": "Dog",
+  "breed": "Golden Retriever",
+  "age": 4,
+  "careNotes": "Allergic to chicken.",
+  "photoUrl": "https://example.com/rocky.jpg"
+}
+```
+
+Only `name` and `species` are required when creating a pet.
+
+`breed`, `age`, `careNotes`, and `photoUrl` can be cleared with `null`. A pet attached to a booking cannot be deleted.
+
+## Availability
+
+| Method | Endpoint | Access | Request | Success response |
+| --- | --- | --- | --- | --- |
+| `GET` | `/api/sitters/:id/availability` | Public | None | `{ availability }` |
+| `POST` | `/api/availability` | Sitter | Availability fields | `{ availability }` |
+| `PUT` | `/api/availability/:id` | Sitter | Changed fields | `{ availability }` |
+| `DELETE` | `/api/availability/:id` | Sitter | None | `{ message }` |
+
+Availability request:
+
+```json
+{
+  "date": "2026-08-01",
+  "startTime": "09:00",
+  "endTime": "10:00"
+}
+```
+
+Rules:
+
+- The date and start time must be in the future.
+- `endTime` must be after `startTime`.
+- A sitter's availability cannot overlap another slot.
+- Overlapping slots return `409 Conflict`.
+- Slots attached to bookings cannot be edited or deleted.
+- Public results only include future, unbooked slots.
+
+## Bookings
+
+| Method | Endpoint | Access | Request | Success response |
+| --- | --- | --- | --- | --- |
+| `POST` | `/api/bookings` | Owner | Booking IDs | `{ booking }` |
+| `GET` | `/api/bookings` | Owner or sitter | None | `{ bookings }` |
+| `PATCH` | `/api/bookings/:id/status` | Participant | `{ status }` | `{ booking }` |
+
+Create-booking request:
+
+```json
+{
+  "sitterId": 4,
+  "petId": 3,
+  "sitterServiceId": 9,
+  "availabilityId": 11
+}
+```
+
+Booking requirements:
+
+- The pet must belong to the authenticated owner.
+- The service and availability must belong to the selected sitter.
+- The slot must be future and unbooked.
+- Concurrent requests cannot book the same slot twice.
+
+Status permissions:
+
+| Role | Allowed updates |
+| --- | --- |
+| Owner | `cancelled` |
+| Sitter | `accepted`, `declined`, `completed` |
+
+Allowed transitions:
+
+```text
+pending -> accepted, declined, cancelled
+accepted -> completed, cancelled
+```
+
+Declined and cancelled bookings release their availability.
+
+## Messages
+
+Only booking participants can access a booking conversation.
+
+| Method | Endpoint | Request | Success response |
+| --- | --- | --- | --- |
+| `GET` | `/api/messages` | None | `{ conversations }` |
+| `GET` | `/api/messages/:bookingId` | None | `{ messages }` |
+| `POST` | `/api/messages` | `{ bookingId, body }` | `{ message }` |
+
+Send-message request:
+
+```json
+{
+  "bookingId": 15,
+  "body": "Rocky will be ready at 9:00."
+}
+```
+
+Messages must contain 1 to 2000 non-whitespace characters.
+
+Messages are returned chronologically. Opening a conversation marks messages addressed to the current user as read.
+
+## Reviews And Trust Score
+
+| Method | Endpoint | Access | Request | Success response |
+| --- | --- | --- | --- | --- |
+| `POST` | `/api/reviews` | Owner | Review fields | `{ review, trustMetrics }` |
+
+Review request:
+
+```json
+{
+  "bookingId": 15,
+  "rating": 5,
+  "wasOnTime": true,
+  "comment": "Great communication and very reliable."
+}
+```
+
+Rules:
+
+- The booking must belong to the authenticated owner.
+- The booking must be completed.
+- Each booking can only be reviewed once.
+- `rating` must be an integer from 1 through 5.
+- `wasOnTime` can be `true`, `false`, or `null`.
+- `comment` can contain up to 2000 characters.
+
+Trust Score calculation:
+
+```text
+Average rating: up to 70 points
+On-time percentage: up to 20 points
+Verified background check: 10 points
+Maximum score: 100
+```
+
+Trust metrics are recalculated after reviews and background-check changes.

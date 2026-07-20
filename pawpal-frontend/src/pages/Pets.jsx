@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import DeletePetDialog from "../components/pets/DeletePetDialog";
+import HealthPassport from "../components/pets/HealthPassport";
 import Modal from "../components/Modal";
 import PetForm from "../components/pets/PetForm";
 import PetList from "../components/pets/PetList";
@@ -9,6 +10,7 @@ import {
   deletePet,
   getPets,
   updatePet,
+  uploadPetPhoto,
 } from "../services/petservice";
 import "./Pets.css";
 
@@ -25,6 +27,8 @@ function Pets() {
   const [petPendingDelete, setPetPendingDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  const [healthPet, setHealthPet] = useState(null);
 
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -69,26 +73,48 @@ function Pets() {
     setFormError("");
   }
 
-  async function handleSavePet(petDetails) {
+  async function handleSavePet(petDetails, photoFile) {
     setIsSaving(true);
     setFormError("");
 
     try {
+      const savedPet = editingPet
+        ? await updatePet(editingPet.id, petDetails)
+        : await createPet(petDetails);
+
+      let finalPet = savedPet;
+      let photoUploadError = "";
+
+      if (photoFile) {
+        try {
+          finalPet = await uploadPetPhoto(savedPet.id, photoFile);
+        } catch (uploadError) {
+          photoUploadError =
+            uploadError.message || "Unable to upload the photo.";
+        }
+      }
+
       if (editingPet) {
-        const savedPet = await updatePet(editingPet.id, petDetails);
-
         setPets((currentPets) =>
-          currentPets.map((pet) => (pet.id === savedPet.id ? savedPet : pet)),
+          currentPets.map((pet) => (pet.id === finalPet.id ? finalPet : pet)),
         );
-
-        setToastMessage(`${savedPet.name} was updated.`);
-        setToastType("success");
       } else {
-        const savedPet = await createPet(petDetails);
+        setPets((currentPets) => [finalPet, ...currentPets]);
+      }
 
-        setPets((currentPets) => [savedPet, ...currentPets]);
-
-        setToastMessage(`${savedPet.name} was added! 🎉`);
+      if (photoUploadError) {
+        setToastMessage(
+          `${finalPet.name} was ${
+            editingPet ? "updated" : "added"
+          }, but the photo failed to upload: ${photoUploadError}`,
+        );
+        setToastType("error");
+      } else {
+        setToastMessage(
+          editingPet
+            ? `${finalPet.name} was updated.`
+            : `${finalPet.name} was added! 🎉`,
+        );
         setToastType("success");
       }
 
@@ -190,6 +216,7 @@ function Pets() {
           pets={pets}
           onEdit={openEditForm}
           onDelete={openDeleteDialog}
+          onOpenHealth={setHealthPet}
         />
       )}
 
@@ -223,6 +250,15 @@ function Pets() {
             isDeleting={isDeleting}
             error={deleteError}
           />
+        </Modal>
+      )}
+
+      {healthPet && (
+        <Modal
+          title={`${healthPet.name}'s health passport`}
+          onClose={() => setHealthPet(null)}
+        >
+          <HealthPassport pet={healthPet} />
         </Modal>
       )}
 

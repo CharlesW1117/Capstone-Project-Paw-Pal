@@ -1,7 +1,7 @@
 import PetCard from "./PetCard";
 import "./PetList.css";
 
-function PetList({ pets, onEdit, onDelete }) {
+function PetList({ pets, onEdit, onDelete, onOpenHealth }) {
   if (pets.length === 0) {
     return (
       <div className="pet-list__empty">
@@ -20,6 +20,7 @@ function PetList({ pets, onEdit, onDelete }) {
           pet={pet}
           onEdit={onEdit}
           onDelete={onDelete}
+          onOpenHealth={onOpenHealth}
         />
       ))}
     </div>

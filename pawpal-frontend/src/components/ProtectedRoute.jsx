@@ -1,11 +1,15 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode"; // ✅ change this line
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
+  const location = useLocation();
+  const redirectToLogin = (
+    <Navigate to="/login" replace state={{ from: location }} />
+  );
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return redirectToLogin;
   }
 
   try {
@@ -14,13 +18,13 @@ function ProtectedRoute({ children }) {
 
     if (decoded.exp && decoded.exp < currentTime) {
       localStorage.removeItem("token");
-      return <Navigate to="/login" replace />;
+      return redirectToLogin;
     }
 
     return children;
   } catch (error) {
     localStorage.removeItem("token");
-    return <Navigate to="/login" replace />;
+    return redirectToLogin;
   }
 }
 

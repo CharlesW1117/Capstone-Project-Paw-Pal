@@ -1,0 +1,312 @@
+.health-passport {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.health-passport__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 2rem 0;
+  color: #746d7d;
+}
+
+.health-passport__spinner {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 0.1875rem solid #d9d5df;
+  border-top-color: #007f7f;
+  border-radius: 50%;
+  animation: health-passport-spin 0.8s linear infinite;
+}
+
+@keyframes health-passport-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.health-passport__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 0.0625rem solid #e5e3e8;
+}
+
+.health-passport__section:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.health-passport__section h3 {
+  margin: 0;
+  color: #26212e;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.health-passport__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.125rem;
+}
+
+.health-passport__field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.health-passport__field--full {
+  grid-column: 1 / -1;
+}
+
+.health-passport__field--checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.health-passport__field--checkbox input {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.health-passport__field label {
+  color: #342e3c;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.health-passport__field input,
+.health-passport__field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 0.0625rem solid #c9c5cf;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #26212e;
+  font: inherit;
+}
+
+.health-passport__field input {
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+}
+
+.health-passport__field textarea {
+  min-height: 4.5rem;
+  padding: 0.75rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.health-passport__field input:focus,
+.health-passport__field textarea:focus {
+  border-color: #007f7f;
+  outline: 0;
+  box-shadow: 0 0 0 0.1875rem rgba(0, 168, 168, 0.16);
+}
+
+.health-passport__field input:disabled,
+.health-passport__field textarea:disabled {
+  cursor: not-allowed;
+  background: #f1f0f3;
+  color: #746d7d;
+}
+
+.health-passport__error {
+  margin: 0;
+  padding: 0.75rem;
+  border: 0.0625rem solid #f0b8bd;
+  border-radius: 0.375rem;
+  background: #fff5f6;
+  color: #8f1723;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.health-passport__empty {
+  margin: 0;
+  color: #746d7d;
+  font-size: 0.875rem;
+}
+
+.health-passport__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.health-passport__saved {
+  color: #1b7a4a;
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.health-passport__button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 0.375rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.health-passport__button--secondary {
+  border-color: #c9c5cf;
+  background: #ffffff;
+  color: #4d4656;
+}
+
+.health-passport__button--secondary:hover:not(:disabled) {
+  background: #f5f5f7;
+}
+
+.health-passport__button--primary {
+  border-color: #007f7f;
+  background: #007f7f;
+  color: #ffffff;
+}
+
+.health-passport__button--primary:hover:not(:disabled) {
+  border-color: #006b6b;
+  background: #006b6b;
+}
+
+.health-passport__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.health-passport__vaccination-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.health-passport__vaccination-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 0.0625rem solid #e5e3e8;
+  border-radius: 0.375rem;
+  background: #fafafb;
+}
+
+.health-passport__vaccination-list li > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+  min-width: 0;
+}
+
+.health-passport__vaccination-list li strong {
+  color: #26212e;
+  font-size: 0.9375rem;
+}
+
+.health-passport__vaccination-list li span {
+  color: #746d7d;
+  font-size: 0.8125rem;
+}
+
+.health-passport__vaccination-meta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.health-passport__status {
+  padding: 0.25rem 0.625rem;
+  border-radius: 999rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.health-passport__status--success {
+  background: #e8f7ee;
+  color: #245d39;
+}
+
+.health-passport__status--warning {
+  background: #fff2cf;
+  color: #755700;
+}
+
+.health-passport__status--danger {
+  background: #fff0f1;
+  color: #951e2a;
+}
+
+.health-passport__status--neutral {
+  background: #efedf1;
+  color: #625b6c;
+}
+
+.health-passport__icon-button {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 0.0625rem solid #f0b8bd;
+  border-radius: 0.375rem;
+  background: #fff5f6;
+  color: #8f1723;
+  cursor: pointer;
+}
+
+.health-passport__icon-button:hover:not(:disabled) {
+  background: #ffe6e8;
+}
+
+.health-passport__icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.health-passport__add-vaccination {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding-top: 0.25rem;
+}
+
+@media (max-width: 40rem) {
+  .health-passport__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .health-passport__field--full {
+    grid-column: auto;
+  }
+
+  .health-passport__vaccination-list li {
+    flex-direction: column;
+  }
+
+  .health-passport__vaccination-meta {
+    align-self: flex-end;
+  }
+}

@@ -2,31 +2,91 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
   background-color: var(--color-primary);
-  color: var(--color-secondary);
+  color: rgb(90, 46, 148);
   padding: 1rem 2rem;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar-logo {
+  color: purple;
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+.menu-toggle {
+  border: none;
+  background: transparent;
+  color: var(--color-secondary);
+  font: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 
 .navbar-links {
   display: flex;
+  align-items: center;
   gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.navbar-links a {
+.navbar-links li {
+  list-style: none;
+}
+
+.navbar-links a,
+.navbar-auth-link {
+  border: none;
+  background: transparent;
   color: var(--color-secondary);
   text-decoration: none;
+  font: inherit;
   font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+@keyframes flashText {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.navbar-links a:hover,
+.navbar-auth-link:hover {
+  animation: flashText 0.8s infinite;
+  transform: scale(1.1);
 }
 
 .navbar-links a.active {
   border-bottom: 2px solid var(--color-accent);
-}
-
-.logout-btn {
-  background-color: var(--color-accent);
-  color: var(--color-text);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
 }
