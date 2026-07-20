@@ -25,6 +25,11 @@
   margin-top: 0.5rem;
 }
 
+.profile-pic input:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .profile-info label {
   display: block;
   margin-bottom: 1rem;
@@ -43,4 +48,16 @@
 .profile-info textarea {
   resize: none;
   height: 80px;
+}
+
+.owner-profile__status {
+  margin-top: 0.5rem;
+  color: var(--color-text);
+  font-size: 0.875rem;
+}
+
+.owner-profile__error {
+  margin-top: 0.5rem;
+  color: #b92937;
+  font-size: 0.875rem;
 }
