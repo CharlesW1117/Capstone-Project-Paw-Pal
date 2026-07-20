@@ -16,7 +16,11 @@ export async function apiRequest(path, options = {}) {
   const token = localStorage.getItem("token");
   const headers = new Headers(options.headers || {});
 
-  if (options.body && !headers.has("Content-Type")) {
+  if (
+    options.body &&
+    !headers.has("Content-Type") &&
+    !(options.body instanceof FormData)
+  ) {
     headers.set("Content-Type", "application/json");
   }
 
