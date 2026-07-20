@@ -1,27 +1,58 @@
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-function Sidebar({ isOpen }) {
+function Sidebar({ isOpen, sidebarRef, onClose }) {
+  // ✅ Close sidebar when a link is clicked
+  const handleLinkClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+    <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : ""}`}>
       <ul>
         <li>
-          <NavLink to="/dashboard">Dashboard</NavLink>
+          <NavLink to="/dashboard" onClick={handleLinkClick}>
+            Dashboard
+          </NavLink>
         </li>
+
         <li>
-          <NavLink to="/pets">Pets</NavLink>
+          <NavLink to="/pets" onClick={handleLinkClick}>
+            Pets
+          </NavLink>
         </li>
+
         <li>
-          <NavLink to="/book">Book</NavLink>
+          <NavLink to="/book" onClick={handleLinkClick}>
+            Book
+          </NavLink>
         </li>
+
         <li>
-          <NavLink to="/calendar">Calendar</NavLink>
+          <NavLink to="/calendar" onClick={handleLinkClick}>
+            Calendar
+          </NavLink>
         </li>
+
         <li>
-          <NavLink to="/messages">Messages</NavLink>
+          <NavLink to="/messages" onClick={handleLinkClick}>
+            Messages
+          </NavLink>
         </li>
+
         <li>
-          <NavLink to="/reviews">Reviews</NavLink>
+          <NavLink to="/reviews" onClick={handleLinkClick}>
+            Reviews
+          </NavLink>
+        </li>
+
+        {/* 🐾 New Profile link */}
+        <li>
+          <NavLink to="/owner-profile" onClick={handleLinkClick}>
+            Profile
+          </NavLink>
         </li>
       </ul>
     </aside>
