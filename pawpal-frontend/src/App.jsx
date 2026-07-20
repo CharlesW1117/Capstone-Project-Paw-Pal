@@ -4,10 +4,8 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 import Login from "./pages/LoginPage";
 import Register from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
@@ -17,22 +15,20 @@ import Calendar from "./pages/Calendar";
 import Messages from "./pages/Messages";
 import Reviews from "./pages/Reviews";
 import HomePage from "./pages/HomePage";
-import OwnerProfile from "./pages/OwnerProfile"; // ✅ Added import
-
+import Sitters from "./pages/Sitters";
+import OwnerProfile from "./pages/OwnerProfile";
 function App() {
   return (
     <Router>
       <Navbar />
-
       <Routes>
         {/* Redirect root to homepage */}
         <Route path="/" element={<Navigate to="/homepage" replace />} />
-
         {/* Public routes */}
         <Route path="/homepage" element={<HomePage />} />
+        <Route path="/sitters" element={<Sitters />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
         {/* Protected routes */}
         <Route
           path="/dashboard"
@@ -90,12 +86,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/homepage" replace />} />
       </Routes>
     </Router>
   );
 }
-
 export default App;
