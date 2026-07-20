@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchPetPhotoObjectUrl } from "../../services/petservice";
+import { getPhotoFileError } from "../../utils/photoValidation";
 import "./PetForm.css";
 
 function getInitialValues(pet) {
@@ -6,12 +8,8 @@ function getInitialValues(pet) {
     name: pet?.name || "",
     species: pet?.species || "",
     breed: pet?.breed || "",
-    age:
-      pet?.age === null || pet?.age === undefined
-        ? ""
-        : String(pet.age),
+    age: pet?.age === null || pet?.age === undefined ? "" : String(pet.age),
     careNotes: pet?.careNotes || "",
-    photoUrl: pet?.photoUrl || "",
   };
 }
 
@@ -34,32 +32,58 @@ function validateForm(values) {
     }
   }
 
-  if (values.photoUrl.trim()) {
-    try {
-      const parsedUrl = new URL(values.photoUrl.trim());
-
-      if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-        errors.photoUrl = "Photo URL must start with http or https.";
-      }
-    } catch {
-      errors.photoUrl = "Enter a valid photo URL.";
-    }
-  }
-
   return errors;
 }
 
-function PetForm({
-  pet,
-  onSubmit,
-  onCancel,
-  isSubmitting,
-  serverError,
-}) {
+function PetForm({ pet, onSubmit, onCancel, isSubmitting, serverError }) {
   const [values, setValues] = useState(() => getInitialValues(pet));
   const [errors, setErrors] = useState({});
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
+  const [photoError, setPhotoError] = useState("");
 
   const isEditing = Boolean(pet);
+
+  useEffect(() => {
+    if (!pet?.hasPhoto) {
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrl = null;
+
+    fetchPetPhotoObjectUrl(pet.id)
+      .then((url) => {
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+
+        objectUrl = url;
+        setPhotoPreviewUrl(url);
+      })
+      .catch(() => {
+        // No existing photo to preview; the user can still choose a new one.
+      });
+
+    return () => {
+      cancelled = true;
+
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [pet]);
+
+  useEffect(() => {
+    if (!photoFile || !photoPreviewUrl) {
+      return;
+    }
+
+    return () => {
+      URL.revokeObjectURL(photoPreviewUrl);
+    };
+  }, [photoFile, photoPreviewUrl]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -77,6 +101,22 @@ function PetForm({
     }
   }
 
+  function handlePhotoChange(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const validationError = getPhotoFileError(file);
+    if (validationError) {
+      setPhotoError(validationError);
+      event.target.value = "";
+      return;
+    }
+
+    setPhotoError("");
+    setPhotoFile(file);
+    setPhotoPreviewUrl(URL.createObjectURL(file));
+  }
+
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -87,14 +127,16 @@ function PetForm({
       return;
     }
 
-    onSubmit({
-      name: values.name.trim(),
-      species: values.species.trim(),
-      breed: values.breed.trim(),
-      age: values.age === "" ? null : Number(values.age),
-      careNotes: values.careNotes.trim(),
-      photoUrl: values.photoUrl.trim(),
-    });
+    onSubmit(
+      {
+        name: values.name.trim(),
+        species: values.species.trim(),
+        breed: values.breed.trim(),
+        age: values.age === "" ? null : Number(values.age),
+        careNotes: values.careNotes.trim(),
+      },
+      photoFile,
+    );
   }
 
   return (
@@ -105,6 +147,40 @@ function PetForm({
           <span>{serverError}</span>
         </div>
       )}
+
+      <div className="pet-form__photo">
+        <div className="pet-form__photo-preview">
+          {photoPreviewUrl ? (
+            <img src={photoPreviewUrl} alt="" />
+          ) : (
+            <i className="fi fi-rr-paw" aria-hidden="true" />
+          )}
+        </div>
+
+        <div className="pet-form__field pet-form__photo-input">
+          <label htmlFor="pet-photo">Photo</label>
+
+          <input
+            id="pet-photo"
+            name="photo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handlePhotoChange}
+            disabled={isSubmitting}
+            aria-describedby={photoError ? "pet-photo-error" : "pet-photo-help"}
+          />
+
+          {photoError ? (
+            <p id="pet-photo-error" className="pet-form__field-error">
+              {photoError}
+            </p>
+          ) : (
+            <p id="pet-photo-help" className="pet-form__field-help">
+              JPEG, PNG, or WebP, up to 5MB.
+            </p>
+          )}
+        </div>
+      </div>
 
       <div className="pet-form__grid">
         <div className="pet-form__field">
@@ -146,9 +222,7 @@ function PetForm({
             onChange={handleChange}
             disabled={isSubmitting}
             aria-invalid={Boolean(errors.species)}
-            aria-describedby={
-              errors.species ? "pet-species-error" : undefined
-            }
+            aria-describedby={errors.species ? "pet-species-error" : undefined}
             placeholder="Dog, cat, bird..."
             autoComplete="off"
           />
@@ -200,43 +274,7 @@ function PetForm({
         </div>
 
         <div className="pet-form__field pet-form__field--full">
-          <label htmlFor="pet-photo-url">Photo URL</label>
-
-          <input
-            id="pet-photo-url"
-            name="photoUrl"
-            type="url"
-            value={values.photoUrl}
-            onChange={handleChange}
-            disabled={isSubmitting}
-            aria-invalid={Boolean(errors.photoUrl)}
-            aria-describedby={
-              errors.photoUrl
-                ? "pet-photo-url-error"
-                : "pet-photo-url-help"
-            }
-            placeholder="https://example.com/pet-photo.jpg"
-            autoComplete="url"
-          />
-
-          {errors.photoUrl ? (
-            <p
-              id="pet-photo-url-error"
-              className="pet-form__field-error"
-            >
-              {errors.photoUrl}
-            </p>
-          ) : (
-            <p id="pet-photo-url-help" className="pet-form__field-help">
-              Use a direct link to an image hosted online.
-            </p>
-          )}
-        </div>
-
-        <div className="pet-form__field pet-form__field--full">
-          <label htmlFor="pet-care-notes">
-            Care and health information
-          </label>
+          <label htmlFor="pet-care-notes">Care and health information</label>
 
           <textarea
             id="pet-care-notes"
@@ -265,17 +303,10 @@ function PetForm({
           disabled={isSubmitting}
         >
           {isSubmitting && (
-            <span
-              className="pet-form__button-spinner"
-              aria-hidden="true"
-            />
+            <span className="pet-form__button-spinner" aria-hidden="true" />
           )}
 
-          {isSubmitting
-            ? "Saving..."
-            : isEditing
-              ? "Save changes"
-              : "Add pet"}
+          {isSubmitting ? "Saving..." : isEditing ? "Save changes" : "Add pet"}
         </button>
       </div>
     </form>
