@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import DeletePetDialog from "../components/pets/DeletePetDialog";
+import HealthPassport from "../components/pets/HealthPassport";
 import Modal from "../components/Modal";
 import PetForm from "../components/pets/PetForm";
 import PetList from "../components/pets/PetList";
@@ -26,6 +27,8 @@ function Pets() {
   const [petPendingDelete, setPetPendingDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  const [healthPet, setHealthPet] = useState(null);
 
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -213,6 +216,7 @@ function Pets() {
           pets={pets}
           onEdit={openEditForm}
           onDelete={openDeleteDialog}
+          onOpenHealth={setHealthPet}
         />
       )}
 
@@ -246,6 +250,15 @@ function Pets() {
             isDeleting={isDeleting}
             error={deleteError}
           />
+        </Modal>
+      )}
+
+      {healthPet && (
+        <Modal
+          title={`${healthPet.name}'s health passport`}
+          onClose={() => setHealthPet(null)}
+        >
+          <HealthPassport pet={healthPet} />
         </Modal>
       )}
 

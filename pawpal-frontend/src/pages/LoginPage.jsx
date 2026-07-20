@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 import { loginUser } from "../services/authServices.js";
 
@@ -14,6 +14,10 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from
+    ? location.state.from.pathname + (location.state.from.search || "")
+    : "/dashboard";
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -42,7 +46,7 @@ export default function LoginPage() {
 
       setForm(emptyForm);
 
-      navigate("/dashboard");
+      navigate(redirectTo, { replace: true });
     } catch (error) {
       console.error("Login error:", error);
       setMessage(error.message || "Unable to log in.");
@@ -93,6 +97,10 @@ export default function LoginPage() {
         </button>
 
         {message && <p className="auth-message">{message}</p>}
+
+        <p className="auth-switch">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
 
         <p className="auth-switch">
           Need an account? <Link to="/register">Register</Link>

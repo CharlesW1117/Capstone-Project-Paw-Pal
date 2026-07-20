@@ -1,0 +1,225 @@
+.sitter-settings {
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.sitter-settings__status {
+  padding: 2rem;
+  color: #746d7d;
+}
+
+.sitter-settings__header h1 {
+  margin: 0.25rem 0 0.5rem;
+  color: #26212e;
+}
+
+.sitter-settings__eyebrow {
+  margin: 0;
+  color: #007f7f;
+  font-weight: 650;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sitter-settings__header p {
+  margin: 0;
+  color: #746d7d;
+}
+
+.sitter-settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e3e8;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.sitter-settings__section h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #26212e;
+}
+
+.sitter-settings__empty {
+  margin: 0;
+  color: #746d7d;
+  font-size: 0.9375rem;
+}
+
+.sitter-settings__service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sitter-settings__service-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e3e8;
+  border-radius: 0.5rem;
+  background: #fafafb;
+  flex-wrap: wrap;
+}
+
+.sitter-settings__service-list li > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.sitter-settings__service-list strong {
+  color: #26212e;
+}
+
+.sitter-settings__service-list span {
+  color: #746d7d;
+  font-size: 0.8125rem;
+}
+
+.sitter-settings__service-actions,
+.sitter-settings__price-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sitter-settings__price {
+  font-weight: 700;
+  color: #007f7f;
+}
+
+.sitter-settings__price-edit input {
+  width: 6rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #c9c5cf;
+  border-radius: 0.375rem;
+}
+
+.sitter-settings button {
+  min-height: 2.25rem;
+  padding: 0.4rem 0.875rem;
+  border: 1px solid #007f7f;
+  border-radius: 0.375rem;
+  background: #007f7f;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.sitter-settings button:hover:not(:disabled) {
+  background: #006b6b;
+}
+
+.sitter-settings button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sitter-settings__delete-button {
+  border-color: #f0b8bd;
+  background: #fff5f6;
+  color: #8f1723;
+}
+
+.sitter-settings__delete-button:hover:not(:disabled) {
+  background: #ffe6e8;
+}
+
+.sitter-settings__price-edit button:last-child {
+  border-color: #c9c5cf;
+  background: #ffffff;
+  color: #4d4656;
+}
+
+.sitter-settings__add-service {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e3e8;
+}
+
+.sitter-settings__add-service-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.sitter-settings__add-service-fields select,
+.sitter-settings__add-service-fields input {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #c9c5cf;
+  border-radius: 0.375rem;
+  font: inherit;
+}
+
+.sitter-settings__add-service-fields select {
+  flex: 1 1 14rem;
+}
+
+.sitter-settings__add-service-fields input {
+  flex: 0 1 12rem;
+}
+
+.sitter-settings__error {
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #f0b8bd;
+  border-radius: 0.375rem;
+  background: #fff5f6;
+  color: #8f1723;
+  font-size: 0.8125rem;
+}
+
+.sitter-settings__badge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 999rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sitter-settings__badge--not_submitted {
+  background: #efedf1;
+  color: #625b6c;
+}
+
+.sitter-settings__badge--pending {
+  background: #fff2cf;
+  color: #755700;
+}
+
+.sitter-settings__badge--verified {
+  background: #e8f7ee;
+  color: #245d39;
+}
+
+.sitter-settings__badge--rejected {
+  background: #fff0f1;
+  color: #951e2a;
+}
+
+@media (max-width: 30rem) {
+  .sitter-settings__add-service-fields select,
+  .sitter-settings__add-service-fields input,
+  .sitter-settings__add-service-fields button {
+    flex: 1 1 100%;
+  }
+}

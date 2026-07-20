@@ -18,8 +18,8 @@ function formatAge(age) {
   return `${age} ${Number(age) === 1 ? "year" : "years"} old`;
 }
 
-function PetCard({ pet, onEdit, onDelete }) {
-  const hasActions = onEdit || onDelete;
+function PetCard({ pet, onEdit, onDelete, onOpenHealth }) {
+  const hasActions = onEdit || onDelete || onOpenHealth;
   const [photoUrl, setPhotoUrl] = useState(null);
 
   useEffect(() => {
@@ -79,6 +79,18 @@ function PetCard({ pet, onEdit, onDelete }) {
 
           {hasActions && (
             <div className="pet-card__actions">
+              {onOpenHealth && (
+                <button
+                  className="pet-card__action pet-card__action--health"
+                  type="button"
+                  onClick={() => onOpenHealth(pet)}
+                  aria-label={`${pet.name}'s health passport`}
+                  title={`${pet.name}'s health passport`}
+                >
+                  <i className="fi fi-rr-heart" aria-hidden="true" />
+                </button>
+              )}
+
               {onEdit && (
                 <button
                   className="pet-card__action pet-card__action--edit"

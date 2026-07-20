@@ -88,6 +88,12 @@ function Navbar() {
                 <li>
                   <NavLink to="/reviews">Reviews</NavLink>
                 </li>
+
+                {session.role === "sitter" && (
+                  <li>
+                    <NavLink to="/sitter-settings">My Services</NavLink>
+                  </li>
+                )}
               </ul>
 
               <button

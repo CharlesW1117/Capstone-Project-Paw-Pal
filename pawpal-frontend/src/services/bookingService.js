@@ -25,3 +25,11 @@ export async function updateBookingStatus(bookingId, status) {
 
   return data.booking;
 }
+
+export async function getBackupSitters(bookingId) {
+  const data = await apiRequest(
+    `/bookings/${encodeURIComponent(bookingId)}/backup-sitters`,
+  );
+
+  return data.backupSitters;
+}

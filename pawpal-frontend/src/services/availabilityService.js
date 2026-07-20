@@ -7,3 +7,19 @@ export async function getSitterAvailability(sitterId) {
 
   return data.availability;
 }
+
+export async function createAvailability(slotDetails) {
+  const data = await apiRequest("/availability", {
+    method: "POST",
+    body: JSON.stringify(slotDetails),
+  });
+
+  return data.availability;
+}
+
+export async function deleteAvailability(availabilityId) {
+  return apiRequest(
+    `/availability/${encodeURIComponent(availabilityId)}`,
+    { method: "DELETE" },
+  );
+}

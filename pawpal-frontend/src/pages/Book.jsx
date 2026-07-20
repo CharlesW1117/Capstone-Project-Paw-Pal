@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import BookingConfirmation from "../components/booking/BookingConfirmation";
 import BookingSummary from "../components/booking/BookingSummary";
 import Modal from "../components/Modal";
@@ -42,6 +43,11 @@ function Book() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState("");
   const [bookingSuccess, setBookingSuccess] = useState(null);
+
+  const [searchParams] = useSearchParams();
+  const preselectSitterId = searchParams.get("sitterId");
+  const hasAppliedPreselect = useRef(false);
+  const bookingSectionRef = useRef(null);
 
   useEffect(() => {
     let shouldIgnore = false;
@@ -108,6 +114,30 @@ function Book() {
   useEffect(() => {
     loadSitters();
   }, [loadSitters]);
+
+  useEffect(() => {
+    if (
+      !preselectSitterId ||
+      hasAppliedPreselect.current ||
+      sitters.length === 0
+    ) {
+      return;
+    }
+
+    const sitterToPreselect = sitters.find(
+      (sitter) => String(sitter.id) === preselectSitterId,
+    );
+
+    if (!sitterToPreselect) {
+      return;
+    }
+
+    hasAppliedPreselect.current = true;
+    chooseSitter(sitterToPreselect);
+    setOpenSitterId(sitterToPreselect.id);
+    loadAvailability(sitterToPreselect.id);
+    bookingSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [sitters, preselectSitterId]);
 
   async function loadAvailability(sitterId) {
     setAvailabilityBySitter((currentState) => ({
@@ -374,6 +404,7 @@ function Book() {
 
       {selectedSitter && (
         <section
+          ref={bookingSectionRef}
           className="book-page__booking"
           aria-label="Booking summary"
         >

@@ -1,0 +1,35 @@
+.sitters-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sitters-page__layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.sitters-page__layout > div:first-child {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.sitters-page__map-panel {
+  position: sticky;
+  top: 1.5rem;
+  flex: 1 1 38%;
+  min-width: 20rem;
+}
+
+@media (max-width: 64rem) {
+  .sitters-page__layout {
+    flex-direction: column;
+  }
+
+  .sitters-page__map-panel {
+    position: static;
+    width: 100%;
+  }
+}

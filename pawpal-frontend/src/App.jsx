@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/LoginPage";
 import Register from "./pages/RegisterPage";
+import ForgotPassword from "./pages/ForgotPasswordPage";
+import ResetPassword from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
 import Pets from "./pages/Pets";
 import Book from "./pages/Book";
@@ -17,6 +19,7 @@ import Reviews from "./pages/Reviews";
 import HomePage from "./pages/HomePage";
 import Sitters from "./pages/Sitters";
 import OwnerProfile from "./pages/OwnerProfile";
+import SitterSettings from "./pages/SitterSettings";
 function App() {
   return (
     <Router>
@@ -29,6 +32,8 @@ function App() {
         <Route path="/sitters" element={<Sitters />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         {/* Protected routes */}
         <Route
           path="/dashboard"
@@ -67,6 +72,14 @@ function App() {
           element={
             <ProtectedRoute>
               <OwnerProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sitter-settings"
+          element={
+            <ProtectedRoute>
+              <SitterSettings />
             </ProtectedRoute>
           }
         />
