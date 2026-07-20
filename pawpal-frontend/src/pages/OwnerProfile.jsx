@@ -1,93 +1,145 @@
 import { useEffect, useState } from "react";
+import {
+  getCurrentUser,
+  getProfilePhotoUrl,
+  updateCurrentUser,
+  uploadProfilePhoto,
+} from "../services/userService";
+import { getPhotoFileError } from "../utils/photoValidation";
 import "./OwnerProfile.css";
 
 export default function OwnerProfile() {
   const [user, setUser] = useState(null);
   const [form, setForm] = useState({ bio: "", phone: "", city: "", state: "" });
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [loadError, setLoadError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [photoError, setPhotoError] = useState("");
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      const res = await fetch("http://localhost:3000/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setUser(data);
-      setForm({
-        bio: data.bio || "",
-        phone: data.phone || "",
-        city: data.city || "",
-        state: data.state || "",
-      });
-    };
+    let cancelled = false;
+
+    async function fetchProfile() {
+      try {
+        const currentUser = await getCurrentUser();
+        if (cancelled) return;
+
+        setUser(currentUser);
+        setForm({
+          bio: currentUser.bio || "",
+          phone: currentUser.phone || "",
+          city: currentUser.city || "",
+          state: currentUser.state || "",
+        });
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error.message || "Unable to load your profile.");
+        }
+      }
+    }
+
     fetchProfile();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
 
-  const handleSave = async () => {
+  function handleChange(event) {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  }
+
+  async function handleSave() {
     setSaving(true);
-    const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:3000/api/auth/me", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    setUser(data);
-    setSaving(false);
-  };
+    setSaveError("");
 
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+    try {
+      const updatedUser = await updateCurrentUser(form);
+      setUser(updatedUser);
+    } catch (error) {
+      setSaveError(error.message || "Unable to save your changes.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handlePhotoUpload(event) {
+    const file = event.target.files[0];
     if (!file) return;
 
-    // show preview immediately
-    setPreview(URL.createObjectURL(file));
-
-    // upload to backend
-    const token = localStorage.getItem("token");
-    const formData = new FormData();
-    formData.append("photo", file);
-
-    const res = await fetch("http://localhost:3000/api/upload/profile-photo", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      setUser({ ...user, hasProfilePhoto: true });
+    const validationError = getPhotoFileError(file);
+    if (validationError) {
+      setPhotoError(validationError);
+      event.target.value = "";
+      return;
     }
-  };
+
+    setPhotoError("");
+    setPreview(URL.createObjectURL(file));
+    setUploadingPhoto(true);
+
+    try {
+      const updatedUser = await uploadProfilePhoto(file);
+      setUser(updatedUser);
+    } catch (error) {
+      setPhotoError(error.message || "Unable to upload your photo.");
+    } finally {
+      setUploadingPhoto(false);
+      event.target.value = "";
+    }
+  }
+
+  if (loadError) {
+    return (
+      <div className="owner-profile">
+        <p className="owner-profile__error" role="alert">
+          {loadError}
+        </p>
+      </div>
+    );
+  }
 
   if (!user) return <p>Loading profile...</p>;
+
+  const photoSrc = preview
+    ? preview
+    : user.hasProfilePhoto
+      ? getProfilePhotoUrl(user.id)
+      : "/default-profile.png";
 
   return (
     <div className="owner-profile">
       <h2>Pet Owner Profile</h2>
       <div className="profile-header">
         <div className="profile-pic">
-          <img
-            src={
-              preview
-                ? preview
-                : user.hasProfilePhoto
-                  ? `http://localhost:3000/uploads/profiles/${user.id}.jpg`
-                  : "/default-profile.png"
-            }
-            alt="Profile"
+          <img src={photoSrc} alt="Profile" />
+
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handlePhotoUpload}
+            disabled={uploadingPhoto}
           />
-          <input type="file" accept="image/*" onChange={handlePhotoUpload} />
+
+          {uploadingPhoto && (
+            <p className="owner-profile__status">Uploading...</p>
+          )}
+
+          {photoError && (
+            <p className="owner-profile__error" role="alert">
+              {photoError}
+            </p>
+          )}
         </div>
 
         <div className="profile-info">
@@ -108,6 +160,12 @@ export default function OwnerProfile() {
 
           <label>Bio:</label>
           <textarea name="bio" value={form.bio} onChange={handleChange} />
+
+          {saveError && (
+            <p className="owner-profile__error" role="alert">
+              {saveError}
+            </p>
+          )}
 
           <button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}

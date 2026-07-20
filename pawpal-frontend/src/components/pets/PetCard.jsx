@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { fetchPetPhotoObjectUrl } from "../../services/petservice";
 import "./PetCard.css";
 
 function formatSpecies(species) {
@@ -18,16 +20,49 @@ function formatAge(age) {
 
 function PetCard({ pet, onEdit, onDelete }) {
   const hasActions = onEdit || onDelete;
+  const [photoUrl, setPhotoUrl] = useState(null);
+
+  useEffect(() => {
+    if (!pet.hasPhoto) {
+      setPhotoUrl(null);
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrl = null;
+
+    fetchPetPhotoObjectUrl(pet.id)
+      .then((url) => {
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+
+        objectUrl = url;
+        setPhotoUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPhotoUrl(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+    // Depends on the whole `pet` object (not just id/hasPhoto) so a
+    // replaced photo is re-fetched even though hasPhoto stays true.
+  }, [pet]);
 
   return (
     <article className="pet-card">
       <div className="pet-card__image-area">
-        {pet.photoUrl ? (
-          <img
-            className="pet-card__image"
-            src={pet.photoUrl}
-            alt={pet.name}
-          />
+        {photoUrl ? (
+          <img className="pet-card__image" src={photoUrl} alt={pet.name} />
         ) : (
           <div className="pet-card__image-placeholder" aria-hidden="true">
             <i className="fi fi-rr-paw" />
@@ -39,9 +74,7 @@ function PetCard({ pet, onEdit, onDelete }) {
         <div className="pet-card__heading">
           <div>
             <h2 className="pet-card__name">{pet.name}</h2>
-            <p className="pet-card__species">
-              {formatSpecies(pet.species)}
-            </p>
+            <p className="pet-card__species">{formatSpecies(pet.species)}</p>
           </div>
 
           {hasActions && (
