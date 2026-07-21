@@ -1,0 +1,206 @@
+.dashboard-main {
+  padding: 30px;
+  min-height: 100vh;
+  margin: 0 auto;
+  max-width: 1100px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.sitter-btn {
+  background-color: rgb(102, 52, 177);
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  padding: 10px 15px;
+}
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 35px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(125, 72, 204, 0.3);
+  background-color: rgba(142, 106, 195, 0.3);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.add-pet-btn {
+  background-color: rgb(102, 52, 177);
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  padding: 9px 15px;
+}
+
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 35px;
+}
+
+.pet-card {
+  padding: 14px;
+  border-radius: 18px;
+  margin-bottom: 18px;
+}
+
+.dashboard-main .pet-card {
+  border: 2px solid rgba(125, 72, 204, 0.3);
+  background-color: rgba(142, 106, 195, 0.3);
+}
+
+.booking-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(125, 72, 204, 0.3);
+  background-color: rgba(142, 106, 195, 0.3);
+  margin-bottom: 18px;
+}
+
+.dashboard-main .pet-card h3,
+.dashboard-main .pet-card p,
+.booking-card h3,
+.booking-card p,
+.message-card h3,
+.message-card p {
+  margin: 0;
+}
+
+.message-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(125, 72, 204, 0.3);
+  background-color: rgba(142, 106, 195, 0.3);
+  margin-bottom: 18px;
+}
+
+.dashboard-section {
+  padding: 4px;
+}
+
+.empty-message {
+  color: #6b6375;
+  font-size: 1rem;
+}
+
+/*
+sitter dashboard
+*/
+
+.sitter-summary {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.dashboard-card-list {
+  display: grid;
+  gap: 16px;
+}
+
+.booking-card,
+.message-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.booking-status {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background-color: rgba(102, 52, 177, 0.15);
+  color: rgb(82, 36, 151);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.booking-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-link-btn {
+  color: rgb(102, 52, 177);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.secondary-dashboard-btn {
+  padding: 8px 13px;
+  border: 1px solid rgb(102, 52, 177);
+  border-radius: 10px;
+  color: rgb(102, 52, 177);
+  background-color: white;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.empty-dashboard-card {
+  padding: 24px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  border: 2px dashed rgba(125, 72, 204, 0.3);
+  background-color: rgba(142, 106, 195, 0.08);
+}
+
+.empty-dashboard-card h3,
+.empty-dashboard-card p {
+  margin: 0;
+}
+
+.empty-dashboard-card p {
+  margin-top: 5px;
+  color: #6b6375;
+}
+
+.unread-count {
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: rgb(102, 52, 177);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .dashboard-header {
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .sitter-summary,
+  .dashboard-summary,
+  .pet-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .booking-card,
+  .message-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

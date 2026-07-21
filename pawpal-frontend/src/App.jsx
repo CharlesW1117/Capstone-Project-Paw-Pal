@@ -10,7 +10,7 @@ import Login from "./pages/LoginPage";
 import Register from "./pages/RegisterPage";
 import ForgotPassword from "./pages/ForgotPasswordPage";
 import ResetPassword from "./pages/ResetPasswordPage";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/DashboardPage";
 import Pets from "./pages/Pets";
 import Book from "./pages/Book";
 import Calendar from "./pages/Calendar";
