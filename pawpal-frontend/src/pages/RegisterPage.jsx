@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 import { registerUser } from "../services/authServices.js";
 
@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -42,20 +43,15 @@ export default function RegisterPage() {
       zipCode: form.zipCode.trim(),
     };
 
-    console.log("Registration data being sent:", registrationData);
-
     try {
       const data = await registerUser(registrationData);
 
-      console.log("Registration response:", data);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      localStorage.setItem("pawPalToken", data.token);
-      localStorage.setItem("pawPalUser", JSON.stringify(data.user));
-
-      setMessage("Account created successfully.");
       setForm(emptyForm);
+      navigate("/dashboard", { replace: true });
     } catch (error) {
-      console.error("Registration error:", error);
       setMessage(error.message || "Unable to create account.");
     } finally {
       setIsSubmitting(false);
@@ -104,6 +100,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             autoComplete="new-password"
             minLength={8}
+            maxLength={128}
             required
           />
         </div>
@@ -133,6 +130,7 @@ export default function RegisterPage() {
               value={form.city}
               onChange={handleChange}
               autoComplete="address-level2"
+              maxLength={100}
               required
             />
           </div>
@@ -147,7 +145,7 @@ export default function RegisterPage() {
               onChange={handleChange}
               autoComplete="address-level1"
               maxLength={2}
-              placeholder="LA"
+              placeholder="IL"
               required
             />
           </div>
@@ -172,7 +170,11 @@ export default function RegisterPage() {
           {isSubmitting ? "Creating account..." : "Create Account"}
         </button>
 
-        {message && <p className="auth-message">{message}</p>}
+        {message && (
+          <p className="auth-message" role="alert">
+            {message}
+          </p>
+        )}
 
         <p className="auth-switch">
           Already registered? <Link to="/login">Log in</Link>

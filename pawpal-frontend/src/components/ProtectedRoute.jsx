@@ -1,31 +1,23 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // ✅ change this line
+import { getCurrentSession } from "../services/authServices.js";
 
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
+function ProtectedRoute({ children, allowedRoles }) {
   const location = useLocation();
-  const redirectToLogin = (
-    <Navigate to="/login" replace state={{ from: location }} />
-  );
+  const session = getCurrentSession();
 
-  if (!token) {
-    return redirectToLogin;
+  if (!session) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  try {
-    const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-
-    if (decoded.exp && decoded.exp < currentTime) {
-      localStorage.removeItem("token");
-      return redirectToLogin;
-    }
-
-    return children;
-  } catch (error) {
-    localStorage.removeItem("token");
-    return redirectToLogin;
+  if (
+    Array.isArray(allowedRoles) &&
+    allowedRoles.length > 0 &&
+    !allowedRoles.includes(session.role)
+  ) {
+    return <Navigate to="/dashboard" replace />;
   }
+
+  return children;
 }
 
 export default ProtectedRoute;

@@ -8,9 +8,16 @@ import {
 import { getPhotoFileError } from "../utils/photoValidation";
 import "./OwnerProfile.css";
 
+const emptyProfile = {
+  bio: "",
+  phone: "",
+  city: "",
+  state: "",
+};
+
 export default function OwnerProfile() {
   const [user, setUser] = useState(null);
-  const [form, setForm] = useState({ bio: "", phone: "", city: "", state: "" });
+  const [form, setForm] = useState(emptyProfile);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -24,7 +31,10 @@ export default function OwnerProfile() {
     async function fetchProfile() {
       try {
         const currentUser = await getCurrentUser();
-        if (cancelled) return;
+
+        if (cancelled) {
+          return;
+        }
 
         setUser(currentUser);
         setForm({
@@ -56,7 +66,8 @@ export default function OwnerProfile() {
   }, [preview]);
 
   function handleChange(event) {
-    setForm({ ...form, [event.target.name]: event.target.value });
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
   }
 
   async function handleSave() {
@@ -64,8 +75,21 @@ export default function OwnerProfile() {
     setSaveError("");
 
     try {
-      const updatedUser = await updateCurrentUser(form);
+      const updatedUser = await updateCurrentUser({
+        ...form,
+        city: form.city.trim(),
+        state: form.state.trim().toUpperCase(),
+        phone: form.phone.trim(),
+        bio: form.bio.trim(),
+      });
+
       setUser(updatedUser);
+      setForm({
+        bio: updatedUser.bio || "",
+        phone: updatedUser.phone || "",
+        city: updatedUser.city || "",
+        state: updatedUser.state || "",
+      });
     } catch (error) {
       setSaveError(error.message || "Unable to save your changes.");
     } finally {
@@ -75,9 +99,13 @@ export default function OwnerProfile() {
 
   async function handlePhotoUpload(event) {
     const file = event.target.files[0];
-    if (!file) return;
+
+    if (!file) {
+      return;
+    }
 
     const validationError = getPhotoFileError(file);
+
     if (validationError) {
       setPhotoError(validationError);
       event.target.value = "";
@@ -85,13 +113,21 @@ export default function OwnerProfile() {
     }
 
     setPhotoError("");
-    setPreview(URL.createObjectURL(file));
+
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+
+    const nextPreview = URL.createObjectURL(file);
+    setPreview(nextPreview);
     setUploadingPhoto(true);
 
     try {
       const updatedUser = await uploadProfilePhoto(file);
       setUser(updatedUser);
     } catch (error) {
+      URL.revokeObjectURL(nextPreview);
+      setPreview(null);
       setPhotoError(error.message || "Unable to upload your photo.");
     } finally {
       setUploadingPhoto(false);
@@ -109,20 +145,23 @@ export default function OwnerProfile() {
     );
   }
 
-  if (!user) return <p>Loading profile...</p>;
+  if (!user) {
+    return <p>Loading profile...</p>;
+  }
 
   const photoSrc = preview
     ? preview
     : user.hasProfilePhoto
       ? getProfilePhotoUrl(user.id)
-      : "/default-profile.png";
+      : "/default-profile.svg";
 
   return (
     <div className="owner-profile">
       <h2>Pet Owner Profile</h2>
+
       <div className="profile-header">
         <div className="profile-pic">
-          <img src={photoSrc} alt="Profile" />
+          <img src={photoSrc} alt={`${user.name}'s profile`} />
 
           <input
             type="file"
@@ -149,17 +188,43 @@ export default function OwnerProfile() {
           <label>Email:</label>
           <p>{user.email}</p>
 
-          <label>City:</label>
-          <input name="city" value={form.city} onChange={handleChange} />
+          <label htmlFor="profile-city">City:</label>
+          <input
+            id="profile-city"
+            name="city"
+            value={form.city}
+            onChange={handleChange}
+            maxLength={100}
+            required
+          />
 
-          <label>State:</label>
-          <input name="state" value={form.state} onChange={handleChange} />
+          <label htmlFor="profile-state">State:</label>
+          <input
+            id="profile-state"
+            name="state"
+            value={form.state}
+            onChange={handleChange}
+            maxLength={2}
+            required
+          />
 
-          <label>Phone:</label>
-          <input name="phone" value={form.phone} onChange={handleChange} />
+          <label htmlFor="profile-phone">Phone:</label>
+          <input
+            id="profile-phone"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            maxLength={20}
+          />
 
-          <label>Bio:</label>
-          <textarea name="bio" value={form.bio} onChange={handleChange} />
+          <label htmlFor="profile-bio">Bio:</label>
+          <textarea
+            id="profile-bio"
+            name="bio"
+            value={form.bio}
+            onChange={handleChange}
+            maxLength={2000}
+          />
 
           {saveError && (
             <p className="owner-profile__error" role="alert">
@@ -167,7 +232,7 @@ export default function OwnerProfile() {
             </p>
           )}
 
-          <button onClick={handleSave} disabled={saving}>
+          <button type="button" onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>

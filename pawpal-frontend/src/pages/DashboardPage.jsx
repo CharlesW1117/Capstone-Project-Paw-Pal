@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/authServices.js";
 import { getCurrentUser } from "../services/userService.js";
 import OwnerDashboard from "./OwnerDashboard.jsx";
 import SitterDashboard from "./SitterDashboard.jsx";
@@ -7,21 +9,44 @@ import "../styles/dashboard.css";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadUser() {
       try {
         const userData = await getCurrentUser();
-        setUser(userData);
+
+        if (!cancelled) {
+          setUser(userData);
+        }
       } catch (error) {
-        console.error("Could not load user:", error);
+        if (cancelled) {
+          return;
+        }
+
+        if (error?.status === 401) {
+          logoutUser();
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setLoadError(error.message || "Unable to load your dashboard.");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     }
 
     loadUser();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   if (isLoading) {
     return (
@@ -31,9 +56,13 @@ export default function Dashboard() {
     );
   }
 
-  if (user?.role === "sitter") {
-    return <SitterDashboard />;
+  if (loadError || !user) {
+    return (
+      <main className="dashboard-main">
+        <p role="alert">{loadError || "Unable to load your dashboard."}</p>
+      </main>
+    );
   }
 
-  return <OwnerDashboard />;
+  return user.role === "sitter" ? <SitterDashboard /> : <OwnerDashboard />;
 }

@@ -8,8 +8,9 @@ function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
-
   const session = getCurrentSession();
+  const isOwner = session?.role === "owner";
+  const isSitter = session?.role === "sitter";
 
   function handleToggleSidebar() {
     setIsSidebarOpen((current) => !current);
@@ -69,13 +70,22 @@ function Navbar() {
                   <NavLink to="/dashboard">Dashboard</NavLink>
                 </li>
 
-                <li>
-                  <NavLink to="/pets">Pets</NavLink>
-                </li>
-
-                <li>
-                  <NavLink to="/book">Book</NavLink>
-                </li>
+                {isOwner && (
+                  <>
+                    <li>
+                      <NavLink to="/pets">Pets</NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/book">Book</NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/reviews">Reviews</NavLink>
+                    </li>
+                    <li>
+                      <NavLink to="/owner-profile">Profile</NavLink>
+                    </li>
+                  </>
+                )}
 
                 <li>
                   <NavLink to="/calendar">Calendar</NavLink>
@@ -85,11 +95,7 @@ function Navbar() {
                   <NavLink to="/messages">Messages</NavLink>
                 </li>
 
-                <li>
-                  <NavLink to="/reviews">Reviews</NavLink>
-                </li>
-
-                {session.role === "sitter" && (
+                {isSitter && (
                   <li>
                     <NavLink to="/sitter-settings">My Services</NavLink>
                   </li>
@@ -109,7 +115,6 @@ function Navbar() {
               <li>
                 <NavLink to="/login">Log In</NavLink>
               </li>
-
               <li>
                 <NavLink to="/register">Register</NavLink>
               </li>
