@@ -137,16 +137,20 @@ export default function OwnerProfile() {
 
   if (loadError) {
     return (
-      <div className="owner-profile">
+      <main className="owner-profile owner-profile--status">
         <p className="owner-profile__error" role="alert">
           {loadError}
         </p>
-      </div>
+      </main>
     );
   }
 
   if (!user) {
-    return <p>Loading profile...</p>;
+    return (
+      <main className="owner-profile owner-profile--status">
+        <p>Loading profile...</p>
+      </main>
+    );
   }
 
   const photoSrc = preview
@@ -155,23 +159,58 @@ export default function OwnerProfile() {
       ? getProfilePhotoUrl(user.id)
       : "/default-profile.svg";
 
-  return (
-    <div className="owner-profile">
-      <h2>Pet Owner Profile</h2>
+  const hasCustomPhoto = Boolean(preview || user.hasProfilePhoto);
 
-      <div className="profile-header">
-        <div className="profile-pic">
-          <img src={photoSrc} alt={`${user.name}'s profile`} />
+  return (
+    <main className="owner-profile">
+      <header className="owner-profile__header">
+        <p className="owner-profile__eyebrow">Account</p>
+        <h1>Pet Owner Profile</h1>
+        <p>Keep your contact details current so sitters can reach you when needed.</p>
+      </header>
+
+      <section className="owner-profile__card" aria-label="Pet owner profile details">
+        <aside className="owner-profile__photo-panel">
+          <div className="owner-profile__avatar">
+            <img src={photoSrc} alt={`${user.name}'s profile`} />
+          </div>
+
+          <div className="owner-profile__summary">
+            <h2>{user.name}</h2>
+            <p>{user.email}</p>
+          </div>
 
           <input
+            id="owner-profile-photo"
+            className="owner-profile__file-input"
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={handlePhotoUpload}
             disabled={uploadingPhoto}
           />
+          <label
+            className={`owner-profile__photo-button${
+              uploadingPhoto ? " owner-profile__photo-button--disabled" : ""
+            }`}
+            htmlFor="owner-profile-photo"
+            aria-disabled={uploadingPhoto}
+          >
+            <i className="fi fi-rr-camera" aria-hidden="true" />
+            {uploadingPhoto
+              ? "Uploading..."
+              : hasCustomPhoto
+                ? "Change photo"
+                : "Add photo"}
+          </label>
+
+          <p className="owner-profile__photo-help">
+            JPEG, PNG, or WebP. Maximum 5 MB.
+          </p>
 
           {uploadingPhoto && (
-            <p className="owner-profile__status">Uploading...</p>
+            <p className="owner-profile__status" role="status">
+              Your new photo is being uploaded.
+            </p>
           )}
 
           {photoError && (
@@ -179,52 +218,80 @@ export default function OwnerProfile() {
               {photoError}
             </p>
           )}
-        </div>
+        </aside>
 
-        <div className="profile-info">
-          <label>Name:</label>
-          <p>{user.name}</p>
+        <div className="owner-profile__details">
+          <div className="owner-profile__section-heading">
+            <div>
+              <h2>Contact details</h2>
+              <p>This information helps coordinate your pet’s care.</p>
+            </div>
+          </div>
 
-          <label>Email:</label>
-          <p>{user.email}</p>
+          <div className="owner-profile__identity">
+            <div>
+              <span>Name</span>
+              <strong>{user.name}</strong>
+            </div>
+            <div>
+              <span>Email</span>
+              <strong>{user.email}</strong>
+            </div>
+          </div>
 
-          <label htmlFor="profile-city">City:</label>
-          <input
-            id="profile-city"
-            name="city"
-            value={form.city}
-            onChange={handleChange}
-            maxLength={100}
-            required
-          />
+          <div className="owner-profile__form-grid">
+            <div className="owner-profile__field">
+              <label htmlFor="profile-city">City</label>
+              <input
+                id="profile-city"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                maxLength={100}
+                placeholder="Your city"
+                required
+              />
+            </div>
 
-          <label htmlFor="profile-state">State:</label>
-          <input
-            id="profile-state"
-            name="state"
-            value={form.state}
-            onChange={handleChange}
-            maxLength={2}
-            required
-          />
+            <div className="owner-profile__field">
+              <label htmlFor="profile-state">State</label>
+              <input
+                id="profile-state"
+                name="state"
+                value={form.state}
+                onChange={handleChange}
+                maxLength={2}
+                placeholder="State"
+                required
+              />
+            </div>
 
-          <label htmlFor="profile-phone">Phone:</label>
-          <input
-            id="profile-phone"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            maxLength={20}
-          />
+            <div className="owner-profile__field owner-profile__field--full">
+              <label htmlFor="profile-phone">Phone</label>
+              <input
+                id="profile-phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                maxLength={20}
+                placeholder="Your phone number"
+              />
+            </div>
 
-          <label htmlFor="profile-bio">Bio:</label>
-          <textarea
-            id="profile-bio"
-            name="bio"
-            value={form.bio}
-            onChange={handleChange}
-            maxLength={2000}
-          />
+            <div className="owner-profile__field owner-profile__field--full">
+              <label htmlFor="profile-bio">About you</label>
+              <textarea
+                id="profile-bio"
+                name="bio"
+                value={form.bio}
+                onChange={handleChange}
+                maxLength={2000}
+                rows={5}
+                placeholder="Share anything a sitter should know about you and your pets."
+              />
+            </div>
+          </div>
 
           {saveError && (
             <p className="owner-profile__error" role="alert">
@@ -232,11 +299,13 @@ export default function OwnerProfile() {
             </p>
           )}
 
-          <button type="button" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
+          <div className="owner-profile__actions">
+            <button type="button" onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save changes"}
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

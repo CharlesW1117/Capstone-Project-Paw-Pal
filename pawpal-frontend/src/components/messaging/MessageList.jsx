@@ -126,6 +126,12 @@ function MessageList({
                     </time>
                   </span>
 
+                  {conversation.bookingLabel && (
+                    <span className="message-list__booking-label">
+                      {conversation.bookingLabel}
+                    </span>
+                  )}
+
                   <span className="message-list__bottom-row">
                     <span>
                       {conversation.lastMessage ||

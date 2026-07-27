@@ -1,13 +1,24 @@
 .sitter-card {
   display: flex;
+  height: 100%;
   min-width: 0;
   flex-direction: column;
   gap: 1.125rem;
   padding: 1.25rem;
   border: 0.0625rem solid #dedbe3;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   background: #ffffff;
   box-shadow: 0 0.25rem 0.75rem rgba(44, 29, 86, 0.07);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.sitter-card:hover {
+  border-color: rgba(0, 127, 127, 0.35);
+  box-shadow: 0 0.75rem 1.5rem rgba(44, 29, 86, 0.11);
+  transform: translateY(-0.125rem);
 }
 
 .sitter-card__header {
@@ -104,9 +115,16 @@
 }
 
 .sitter-card__bio {
+  min-height: 4.1rem;
   color: #625b6c;
   font-size: 0.875rem;
   line-height: 1.55;
+}
+
+.sitter-card__services {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
 }
 
 .sitter-card__services h3 {
@@ -129,6 +147,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   width: 100%;
+  min-height: 4.25rem;
   min-width: 0;
   align-items: center;
   gap: 0.625rem;
@@ -140,6 +159,9 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .sitter-card__service-option:hover {
@@ -197,6 +219,7 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   width: 100%;
   min-height: 2.75rem;
+  margin-top: auto;
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 0.75rem;
@@ -209,6 +232,10 @@
   font-weight: 650;
   text-align: left;
   cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 
 .sitter-card__availability-toggle:hover {
@@ -241,5 +268,15 @@
   .sitter-card__service-option > i {
     grid-column: 2;
     grid-row: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sitter-card {
+    transition: none;
+  }
+
+  .sitter-card:hover {
+    transform: none;
   }
 }

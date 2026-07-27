@@ -158,10 +158,10 @@ function PetForm({ pet, onSubmit, onCancel, isSubmitting, serverError }) {
         </div>
 
         <div className="pet-form__field pet-form__photo-input">
-          <label htmlFor="pet-photo">Photo</label>
-
+          <span className="pet-form__field-label">Pet photo</span>
           <input
             id="pet-photo"
+            className="pet-form__file-input"
             name="photo"
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -169,6 +169,25 @@ function PetForm({ pet, onSubmit, onCancel, isSubmitting, serverError }) {
             disabled={isSubmitting}
             aria-describedby={photoError ? "pet-photo-error" : "pet-photo-help"}
           />
+
+          <div className="pet-form__photo-actions">
+            <label
+              className={`pet-form__photo-button${
+                isSubmitting ? " pet-form__photo-button--disabled" : ""
+              }`}
+              htmlFor="pet-photo"
+              aria-disabled={isSubmitting}
+            >
+              <i className="fi fi-rr-camera" aria-hidden="true" />
+              {photoPreviewUrl ? "Change photo" : "Choose photo"}
+            </label>
+
+            {photoFile && (
+              <span className="pet-form__selected-file" aria-live="polite">
+                {photoFile.name}
+              </span>
+            )}
+          </div>
 
           {photoError ? (
             <p id="pet-photo-error" className="pet-form__field-error">

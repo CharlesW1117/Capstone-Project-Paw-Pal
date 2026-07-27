@@ -67,12 +67,14 @@
 
 .book-page__grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(min(100%, 20rem), 1fr)
-  );
-  align-items: start;
-  gap: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 1.5rem;
+}
+
+.book-page__grid > * {
+  min-width: 0;
+  height: 100%;
 }
 
 .book-page__booking {
@@ -191,6 +193,10 @@
 }
 
 @media (max-width: 43.75rem) {
+  .book-page__grid {
+    grid-template-columns: 1fr;
+  }
+
   .book-page__header h1 {
     font-size: 1.8125rem;
   }
@@ -208,5 +214,11 @@
 @media (prefers-reduced-motion: reduce) {
   .book-page__spinner {
     animation-duration: 1.6s;
+  }
+}
+
+@media (min-width: 43.751rem) and (max-width: 64rem) {
+  .book-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
