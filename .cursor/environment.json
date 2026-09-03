@@ -1,0 +1,16 @@
+{
+  "name": "PawPal Frontend",
+  "install": "cd pawpal-frontend && npm install",
+  "terminals": [
+    {
+      "name": "vite-dev-server",
+      "command": "cd pawpal-frontend && npm run dev -- --host"
+    }
+  ],
+  "ports": [
+    {
+      "name": "Vite dev server",
+      "port": 5173
+    }
+  ]
+}
