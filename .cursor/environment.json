@@ -1,16 +1,30 @@
 {
-  "name": "PawPal Frontend",
-  "install": "cd pawpal-frontend && npm install",
+  "name": "PawPal Full Stack",
+  "install": ".cursor/install.sh",
+  "start": ".cursor/start.sh",
   "terminals": [
     {
-      "name": "vite-dev-server",
-      "command": "cd pawpal-frontend && npm run dev -- --host"
+      "name": "backend-api",
+      "command": "cd \"${PAWPAL_BACKEND_DIR:-$HOME/pawpal-backend}\" && npm run dev",
+      "description": "PawPal Express API on http://localhost:3000/api, from the separate backend repository."
+    },
+    {
+      "name": "frontend-dev-server",
+      "command": "cd pawpal-frontend && npm run dev -- --host",
+      "description": "Vite dev server for the React frontend on http://localhost:5173."
     }
   ],
   "ports": [
     {
-      "name": "Vite dev server",
+      "name": "Frontend dev server",
       "port": 5173
+    },
+    {
+      "name": "Backend API",
+      "port": 3000
     }
+  ],
+  "repositoryDependencies": [
+    "github.com/AntoniRom17/Capstone-Project-Paw-Pal-Back"
   ]
 }
