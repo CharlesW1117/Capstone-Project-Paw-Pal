@@ -7,7 +7,7 @@ This repository contains the React frontend only. The Express and PostgreSQL bac
 ## Repositories
 
 - Frontend: [Capstone-Project-Paw-Pal](https://github.com/CharlesW1117/Capstone-Project-Paw-Pal)
-- Backend: [Capstone-Project-Paw-Pal-Back](https://github.com/AntoniRom17/Capstone-Project-Paw-Pal-Back)
+- Backend: [PawPal-Backend](https://github.com/CharlesW1117/PawPal-Backend)
 
 ## Features
 

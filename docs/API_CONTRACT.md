@@ -2,7 +2,7 @@
 
 API contract between the PawPal frontend and the standalone backend:
 
-https://github.com/AntoniRom17/Capstone-Project-Paw-Pal-Back
+https://github.com/CharlesW1117/PawPal-Backend
 
 ## Configuration
 
