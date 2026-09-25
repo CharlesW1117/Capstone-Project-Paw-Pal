@@ -7,7 +7,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FRONTEND_DIR="$REPO_ROOT/pawpal-frontend"
 BACKEND_DIR="${PAWPAL_BACKEND_DIR:-$HOME/pawpal-backend}"
-BACKEND_REPO="${PAWPAL_BACKEND_REPO:-https://github.com/AntoniRom17/Capstone-Project-Paw-Pal-Back.git}"
+BACKEND_REPO="${PAWPAL_BACKEND_REPO:-https://github.com/CharlesW1117/PawPal-Backend.git}"
 
 # Local-only development credentials. The backend refuses to run without a
 # JWT secret, and PostgreSQL needs a password for TCP connections.
@@ -50,8 +50,35 @@ VITE_API_URL=http://localhost:3000/api
 EOF
 fi
 
+# Reduces a clone URL to host/owner/repo so checkouts whose origin carries
+# injected credentials still compare equal to the plain configured URL.
+repo_identity() {
+  printf '%s' "$1" | sed -e 's#^[a-z+]*://##' -e 's#^[^@/]*@##' -e 's#\.git$##'
+}
+
 log "Fetching backend repository into $BACKEND_DIR"
+current_origin=""
 if [ -d "$BACKEND_DIR/.git" ]; then
+  current_origin="$(git -C "$BACKEND_DIR" remote get-url origin 2>/dev/null || echo '')"
+fi
+
+# A relocated backend repo generally has an unrelated history, which no pull can
+# fast-forward onto. Replace the checkout instead, carrying over the local-only
+# state that lives outside git.
+if [ -n "$current_origin" ] && \
+   [ "$(repo_identity "$current_origin")" != "$(repo_identity "$BACKEND_REPO")" ]; then
+  log "Backend repo moved to $BACKEND_REPO; replacing the checkout"
+  carry_over="$(mktemp -d)"
+  [ -f "$BACKEND_DIR/.env" ] && cp "$BACKEND_DIR/.env" "$carry_over/.env"
+  [ -d "$BACKEND_DIR/uploads" ] && cp -r "$BACKEND_DIR/uploads" "$carry_over/uploads"
+
+  rm -rf "$BACKEND_DIR"
+  git clone --quiet "$BACKEND_REPO" "$BACKEND_DIR"
+
+  [ -f "$carry_over/.env" ] && cp "$carry_over/.env" "$BACKEND_DIR/.env"
+  [ -d "$carry_over/uploads" ] && cp -r "$carry_over/uploads" "$BACKEND_DIR/uploads"
+  rm -rf "$carry_over"
+elif [ -n "$current_origin" ]; then
   git -C "$BACKEND_DIR" fetch --quiet origin
   git -C "$BACKEND_DIR" pull --quiet --ff-only || \
     echo "backend has local changes; keeping the current checkout"
